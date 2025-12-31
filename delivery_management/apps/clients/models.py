@@ -1,7 +1,7 @@
 from django.db import models
 
-class Client(models.Model):
-    code_client = models.DecimalField(max_length=50, unique=True)
+class Clients(models.Model):
+    code_client = models.CharField(max_length=20, unique=True)
     name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
     email = models.EmailField(unique=True)
