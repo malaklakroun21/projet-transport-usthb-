@@ -1,3 +1,4 @@
+from django import forms
 from django.db import models
 from django.utils import timezone
 
@@ -97,3 +98,4 @@ class Expedition(models.Model):
         null=True,
         blank=True
     )
+
