@@ -22,21 +22,25 @@
   display: flex;
   align-items: center;
   background: white;
-  padding: 8px 12px;
+  padding: 6px 10px;
   border-radius: 8px;
-  width: 320px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  width: 350px; /* a little wider */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  border: 1px solid #ddd;
 }
 
 .search-box i {
   color: #888;
   margin-right: 8px;
+  font-size: 16px;
 }
 
 .search-box input {
   border: none;
   outline: none;
   width: 100%;
+  font-size: 14px;
+  padding: 6px 4px;
 }
 
 /* Action buttons */
@@ -131,4 +135,10 @@
 .icon-btn.delete {
   background: #ef4444;
   color: white;
+}
+@media print {
+  .actions,
+  .btn {
+    display: none !important;
+  }
 }
