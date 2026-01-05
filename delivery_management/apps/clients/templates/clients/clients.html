@@ -1,15 +1,83 @@
-{%extends 'main.html'%} {%block content%}
+{%extends 'main.html'%} {% load static %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/clients.css' %}" />
+{% endblock %} {%block content%}
 
-<table>
-  <tbody>
-    {% for client in clients %}
-    <tr>
-      <td>{{ client.code_client }}</td>
-      <td>{{ client.name }}</td>
-      <td>{{ client.phone }}</td>
-      <td>{{ client.email }}</td>
-    </tr>
-    {% endfor %}
-  </tbody>
-</table>
+<section class="clients-page">
+  <!-- Page title + search -->
+  <div class="clients-header">
+    <h2>Gestion Client</h2>
+
+    <div class="search-box">
+      <i class="fa fa-search"></i>
+      <input
+        type="text"
+        placeholder="Rechercher par nom, téléphone, adresse..."
+      />
+    </div>
+  </div>
+
+  <!-- Actions bar -->
+  <div class="clients-actions">
+    <a href="{% url 'create-client' %}" class="btn primary">
+      <i class="fa fa-plus"></i> Nouveau Client
+    </a>
+
+    <button class="btn"><i class="fa fa-print"></i> Imprimer la liste</button>
+
+    <button class="btn">
+      <i class="fa fa-file-export"></i> Exporter la liste
+    </button>
+
+    <select class="status-filter">
+      <option>Filtrer par statut : ALL</option>
+      <option>Actif</option>
+      <option>Inactif</option>
+    </select>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container">
+    <table class="clients-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Type</th>
+          <th>Prénom</th>
+          <th>Téléphone</th>
+          <th>Email</th>
+          <th>Solde</th>
+          <th>Adresse</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {%for client in clients %}
+        <tr>
+          <td>{{ client.code_client }}</td>
+          <td>{{ client.client_type }}</td>
+          <td>{{ client.name }}</td>
+          <td>{{ client.phone }}</td>
+          <td>{{ client.email }}</td>
+          <td>{{ client.balance }}</td>
+          <td>{{ client.address }}</td>
+          <td>
+            <a
+              href="{% url 'update-client' client.id %}"
+              class="btn action-btn edit-btn"
+            >
+              <i class="fa fa-edit"></i>
+            </a>
+            <a
+              href="{% url 'delete-client' client.id %}"
+              class="btn action-btn delete-btn"
+            >
+              <i class="fa fa-trash"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
 {%endblock%}

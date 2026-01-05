@@ -28,7 +28,7 @@ nav {
   background-color: white;
   transition: all 0.3s;
   padding-top: 10px;
-  position: fixed;
+  /* position: fixed; */
   box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
 }
 
@@ -78,10 +78,13 @@ main {
   display: flex;
   flex-direction: column;
   transition: margin-left 0.3s;
+  position: relative;
 }
 
 header {
   height: 60px;
+  top: 0;
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -103,6 +106,9 @@ header {
 article {
   flex-grow: 1;
   padding: 20px;
+}
+.main {
+  width: 100%;
 }
 
 @media (max-width: 768px) {
