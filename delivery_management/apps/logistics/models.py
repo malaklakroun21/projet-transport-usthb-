@@ -1,111 +1,101 @@
-import uuid
-from decimal import Decimal
+from django import forms
 from django.db import models
-from clients.models import Client
-
-class Driver(models.Model):
-    id_driver = models.DecimalField(max_digits=20, unique=True)
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    license_number = models.CharField(max_length=50, unique=True)
-    phone = models.CharField(max_length=20)
-    available = models.BooleanField(default=True)
+from django.utils import timezone
 
 
-class Vehicle(models.Model):
-    id_vehicle = models.DecimalField(max_digits=20, unique=True)
-    plate_number = models.CharField(max_length=20, unique=True)
-    vehicle_type = models.CharField(max_length=50)
-    capacity = models.FloatField()
-    status = models.CharField(max_length=30)
+class Chauffeur(models.Model):
+    nom = models.CharField(max_length=100)
+    telephone = models.CharField(max_length=20, blank=True)
+
+    def __str__(self):
+        return self.nom
 
 
-class Zone(models.Model):
-    id_zone = models.DecimalField(max_digits=20, unique=True)
-    name_zone = models.CharField(max_length=50)
-    base_price = models.DecimalField(max_digits=8, decimal_places=2)
+class Vehicule(models.Model):
+    immatriculation = models.CharField(max_length=30, unique=True)
+    type = models.CharField(max_length=50, blank=True)
+
+    def __str__(self):
+        return self.immatriculation
+
+
+class Tournee(models.Model):
+    date = models.DateField(default=timezone.now)
+    chauffeur = models.ForeignKey('logistics.Chauffeur', on_delete=models.PROTECT)
+    vehicule = models.ForeignKey('logistics.Vehicule', on_delete=models.PROTECT)
+
+    def __str__(self):
+        return f"Tournée {self.date}"
+
+
+class TypeService(models.Model):
+    nom = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return self.nom
 
 
 class Destination(models.Model):
-    id_destination = models.DecimalField(max_digits=20, unique=True)
-    city = models.CharField(max_length=100)
-    country = models.CharField(max_length=100)
-    id_zone = models.ForeignKey(Zone, on_delete=models.CASCADE)
-    postal_code = models.CharField(max_length=20)
+    adresse = models.CharField(max_length=255)
+    ville = models.CharField(max_length=100)
+    code_postal = models.CharField(max_length=20)
+    pays = models.CharField(max_length=100)
 
-
-class ServiceType(models.Model):
-    id_service_type = models.DecimalField(max_digits=20, unique=True)
-    name_servicetype = models.CharField(max_length=50)
-    weight_rate = models.DecimalField(max_digits=8, decimal_places=2)
-    volume_rate = models.DecimalField(max_digits=8, decimal_places=2)
-
-
-class Pricing(models.Model):
-    id_service_type = models.ForeignKey(ServiceType, on_delete=models.CASCADE)
-    id_destination = models.ForeignKey(Destination, on_delete=models.CASCADE)
+    def __str__(self):
+        return f"{self.ville} ({self.pays})"
 
 
 
-class Tour(models.Model):
-    id_tour = models.DecimalField(max_digits=20, unique=True)
-    id_driver = models.ForeignKey(Driver, on_delete=models.PROTECT)
-    id_vehicle = models.ForeignKey(Vehicle, on_delete=models.PROTECT)
-    tour_date = models.DateField()
-    starting_hour = models.TimeField()
-    finishing_hour = models.TimeField()
-    kilometers = models.FloatField()
-    duration = models.DurationField()
-    status = models.CharField(max_length=30)
-    comments = models.TextField(null=True, blank=True)
+class Expedition(models.Model):
 
-
-
-class Shipment(models.Model):
-    tracking_number = models.CharField(max_length=30, unique=True, editable=False)
-    id_client = models.ForeignKey(Client, on_delete=models.CASCADE)
-    id_service_type = models.ForeignKey(ServiceType, on_delete=models.PROTECT)
-    id_destination = models.ForeignKey(Destination, on_delete=models.PROTECT)
-    id_tour = models.ForeignKey(Tour, on_delete=models.SET_NULL, null=True, blank=True)
-    weight = models.FloatField()
+    poids = models.FloatField()
     volume = models.FloatField()
     description = models.TextField()
-    created_at = models.DateTimeField(auto_now_add=True)
-    estimated_delivery_date = models.DateField()
-    reel_delivery_date = models.DateField(null=True, blank=True)
-
+    montant_total = models.FloatField()
+    numero_suivi = models.CharField(max_length=30, unique=True)
+    
     STATUS_CHOICES = [
-        ('CREATED', 'Créée'),
-        ('PENDING', 'En attente'),
-        ('IN_TRANSIT', 'En transit'),
-        ('DELIVERED', 'Livrée'),
-        ('FAILED', 'Échec'),
+        ('EN_ATTENTE', 'En attente'),
+        ('EN_COURS', 'En cours'),
+        ('LIVREE', 'Livrée'),
+        ('ANNULEE', 'Annulée'),
     ]
+
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='CREATED'
+        default='EN_ATTENTE'
     )
-    total_price = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
 
-#calculate total price
+    date_creation = models.DateTimeField(auto_now_add=True)
+    date_livraison_estimee = models.DateField()
+    date_livraison_reelle = models.DateField(
+        null=True,
+        blank=True
+    )
 
-    def calculate_total(self):
-        return (
-            self.Destination.id_zone.base_price +
-            Decimal(self.weight) * self.ServiceType.weight_rate +
-            Decimal(self.volume) * self.ServiceType.volume_rate
-        )
-    def save(self, *args, **kwargs):
-        if not self.tracking_number:
-            self.tracking_number = f"EXP-{uuid.uuid4().hex[:8].upper()}"
+    # foreign keys 
+    
+    client = models.ForeignKey(
+        'clients.Client',
+        on_delete=models.CASCADE,
+        related_name='expeditions'
+    )
 
-        self.total_price = self.calculate_total()
-        super().save(*args, **kwargs)
+    destination = models.ForeignKey(
+        'logistics.Destination',
+        on_delete=models.PROTECT
+    )
 
+    type_service = models.ForeignKey(
+        'logistics.TypeService',
+        on_delete=models.PROTECT
+    )
 
-#I AM NOT SURE ABOUT THE RELATIONSHIP BETWEEN TOUR AND SHIPMENT
+    tournee = models.ForeignKey(
+        'logistics.Tournee',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
 
-class TourShipment(models.Model):
-    tour = models.ForeignKey(Tour, on_delete=models.CASCADE)
-    shipment = models.ForeignKey(Shipment, on_delete=models.CASCADE)
