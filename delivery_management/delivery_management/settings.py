@@ -37,6 +37,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'apps.users',
+    'apps.dashboard',
+    'apps.clients',
+    'apps.logistics',
+    'apps.expeditions',
+    'apps.facturation',
+    'apps.incidents',
+    'apps.reclamation',
 ]
 
 MIDDLEWARE = [
@@ -121,3 +129,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# delivery_management/settings.py
+AUTH_USER_MODEL = 'users.CustomUser'
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'dashboard'  # after login
+LOGOUT_REDIRECT_URL = 'login'
+

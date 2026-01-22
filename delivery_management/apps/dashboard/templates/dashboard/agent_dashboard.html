@@ -1,0 +1,23 @@
+<h1>Agent Dashboard</h1>
+
+<p>Welcome {{ user.username }}</p>
+
+<hr>
+
+<h3>My Activity</h3>
+<ul>
+    <li>My expéditions: {{ total_expeditions }}</li>
+    <li>Créées: {{ creees }}</li>
+    <li>En cours: {{ en_cours }}</li>
+    <li>Livrées: {{ livrees }}</li>
+</ul>
+
+<hr>
+
+<h3>Actions</h3>
+<ul>
+    <li><a href="#">Create Expédition</a></li>
+    <li><a href="#">My Clients</a></li>
+</ul>
+
+<a href="{% url 'logout' %}">Logout</a>
