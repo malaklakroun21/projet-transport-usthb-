@@ -1,19 +1,6 @@
 from django import forms
 from django.db import models
-<<<<<<< HEAD
 from django.utils import timezone
-=======
-from clients.models import Client
-from delivery_management.delivery_management import settings
-
-class Driver(models.Model):
-    id_driver = models.DecimalField(max_digits=20, unique=True)
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    license_number = models.CharField(max_length=50, unique=True)
-    phone = models.CharField(max_length=20)
-    available = models.BooleanField(default=True)
->>>>>>> Django-models
 
 
 class Chauffeur(models.Model):
@@ -57,7 +44,6 @@ class Destination(models.Model):
     def __str__(self):
         return f"{self.ville} ({self.pays})"
 
-<<<<<<< HEAD
 
 
 class Expedition(models.Model):
@@ -113,5 +99,3 @@ class Expedition(models.Model):
         blank=True
     )
 
-=======
->>>>>>> Django-models
