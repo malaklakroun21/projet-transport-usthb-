@@ -38,8 +38,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'apps.users',
+    'apps.dashboard',
     'apps.clients',
     'apps.logistics',
+    'apps.expeditions',
+    'apps.facturation',
+    'apps.incidents',
+    'apps.reclamation',
 ]
 
 MIDDLEWARE = [
@@ -131,3 +137,9 @@ ALLOW_CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
 ]
+# delivery_management/settings.py
+AUTH_USER_MODEL = 'users.CustomUser'
+LOGIN_URL = 'login'
+LOGIN_REDIRECT_URL = 'dashboard'  # after login
+LOGOUT_REDIRECT_URL = 'login'
+

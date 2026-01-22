@@ -1,6 +1,5 @@
 from django.apps import AppConfig
 
-
-class VehiculesConfig(AppConfig):
+class UsersConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'vehicules'
+    name = 'apps.users'   
