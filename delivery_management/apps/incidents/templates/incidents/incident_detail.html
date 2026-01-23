@@ -1,0 +1,196 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incident #{{ incident.pk }} - TransportPro</title>
+    <link rel="stylesheet" href="{% static 'incidents/css/incidents.css' %}">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
+                </svg>
+                <div>
+                    <h1>TransportPro</h1>
+                    <span>Gestion logistique</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="{% url 'incident_list' %}" class="nav-item active">
+                    <span class="icon">⚠️</span>
+                    Incidents & Réclamations
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <a href="{% url 'incident_list' %}" class="close-btn">&times;</a>
+                <span class="date">{{ "now"|date:"l d F Y" }}</span>
+            </header>
+            
+            <div class="content">
+                <div class="detail-container">
+                    <!-- Header -->
+                    <div class="detail-header">
+                        <div class="detail-title">
+                            <h1>INC-{{ incident.pk }}</h1>
+                            <span class="badge badge-{{ incident.incident_type }}">
+                                {{ incident.get_incident_type_display }}
+                            </span>
+                            <span class="status status-{{ incident.status }}">
+                                {{ incident.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="detail-meta">
+                            <span>Créé le {{ incident.created_at|date:"d/m/Y à H:i" }}</span>
+                            <span>Par {{ incident.reported_by.username|default:"Inconnu" }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-grid">
+                        <!-- Left Column -->
+                        <div class="detail-main">
+                            <!-- Info Card -->
+                            <div class="card">
+                                <h3>Informations</h3>
+                                <div class="info-grid">
+                                    <div class="info-item">
+                                        <label>Expédition</label>
+                                        <span>
+                                            {% if incident.shipment %}
+                                                {{ incident.shipment.tracking_number }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Tournée</label>
+                                        <span>
+                                            {% if incident.tour %}
+                                                Tour #{{ incident.tour.id }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Priorité</label>
+                                        <span class="priority priority-{{ incident.priority }}">
+                                            {{ incident.get_priority_display }}
+                                        </span>
+                                    </div>
+                                    <div class="info-item">
+                                        <label>Assigné à</label>
+                                        <span>{{ incident.assigned_to.username|default:"Non assigné" }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Description -->
+                            <div class="card">
+                                <h3>Description</h3>
+                                <p class="description-text">{{ incident.description }}</p>
+                            </div>
+                            
+                            {% if incident.resolution %}
+                            <div class="card">
+                                <h3>Résolution</h3>
+                                <p class="description-text">{{ incident.resolution }}</p>
+                            </div>
+                            {% endif %}
+                            
+                            <!-- Comments -->
+                            <div class="card">
+                                <h3>Commentaires ({{ comments.count }})</h3>
+                                
+                                <div class="comments-list">
+                                    {% for comment in comments %}
+                                    <div class="comment">
+                                        <div class="comment-header">
+                                            <strong>{{ comment.author.username|default:"Anonyme" }}</strong>
+                                            <span>{{ comment.created_at|date:"d/m/Y H:i" }}</span>
+                                        </div>
+                                        <p>{{ comment.content }}</p>
+                                    </div>
+                                    {% empty %}
+                                    <p class="empty-text">Aucun commentaire</p>
+                                    {% endfor %}
+                                </div>
+                                
+                                <form method="post" class="comment-form">
+                                    {% csrf_token %}
+                                    {{ comment_form.content }}
+                                    <button type="submit" name="add_comment" class="btn-primary">
+                                        Ajouter un commentaire
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <!-- Right Column -->
+                        <div class="detail-sidebar">
+                            <!-- Update Status -->
+                            <div class="card">
+                                <h3>Mettre à jour le statut</h3>
+                                <form method="post">
+                                    {% csrf_token %}
+                                    <div class="form-group">
+                                        <label>Statut</label>
+                                        {{ status_form.status }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Assigné à</label>
+                                        {{ status_form.assigned_to }}
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Résolution</label>
+                                        {{ status_form.resolution }}
+                                    </div>
+                                    <button type="submit" name="update_status" class="btn-primary">
+                                        Mettre à jour
+                                    </button>
+                                </form>
+                            </div>
+                            
+                            <!-- Documents -->
+                            <div class="card">
+                                <h3>Documents ({{ documents.count }})</h3>
+                                
+                                <div class="documents-list">
+                                    {% for doc in documents %}
+                                    <div class="document-item">
+                                        <a href="{{ doc.file.url }}" target="_blank">
+                                            📎 {{ doc.description|default:doc.file.name }}
+                                        </a>
+                                    </div>
+                                    {% empty %}
+                                    <p class="empty-text">Aucun document</p>
+                                    {% endfor %}
+                                </div>
+                                
+                                <form method="post" enctype="multipart/form-data" class="upload-form">
+                                    {% csrf_token %}
+                                    {{ document_form.file }}
+                                    {{ document_form.description }}
+                                    <button type="submit" name="add_document" class="btn-secondary">
+                                        Ajouter un document
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

@@ -1,0 +1,172 @@
+{% load static %}
+{% load reclamation_tags %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques Réclamations - TransportPro</title>
+    <link rel="stylesheet" href="{% static 'reclamation/css/reclamation.css' %}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>TransportPro</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{% url 'reclamation_list' %}" class="nav-item">
+                    <span class="nav-icon">💬</span>
+                    Réclamations
+                </a>
+                <a href="{% url 'reclamation_stats' %}" class="nav-item active">
+                    <span class="nav-icon">📈</span>
+                    Rapports
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="content-header">
+                <a href="{% url 'reclamation_list' %}" class="close-btn">&times;</a>
+                <div class="header-date">
+                    {{ "now"|date:"l d F Y" }}
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <div class="page-title">
+                    <h1>Statistiques des Réclamations</h1>
+                    <p>Rapports et analyses des réclamations</p>
+                </div>
+
+                <!-- Stats Overview -->
+                <div class="stats-grid">
+                    <div class="stat-card large">
+                        <div class="stat-value">{{ total }}</div>
+                        <div class="stat-label">Total réclamations</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value status-en_cours">{{ en_cours }}</div>
+                        <div class="stat-label">En cours</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value status-resolue">{{ resolues }}</div>
+                        <div class="stat-label">Résolues</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value status-annulee">{{ annulees }}</div>
+                        <div class="stat-label">Annulées</div>
+                    </div>
+                    <div class="stat-card highlight">
+                        <div class="stat-value">{{ avg_resolution_time|default:"N/A" }}</div>
+                        <div class="stat-label">Délai moyen (jours)</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid">
+                    <!-- Par type -->
+                    <div class="chart-section">
+                        <h3>Réclamations par type</h3>
+                        <div class="chart-bars">
+                            {% for item in by_type %}
+                            <div class="bar-item">
+                                <div class="bar-label">{{ type_choices|get_item:item.type_reclamation }}</div>
+                                <div class="bar-container">
+                                    <div class="bar-fill" style="width: {% widthratio item.count total 100 %}%"></div>
+                                </div>
+                                <div class="bar-value">{{ item.count }}</div>
+                            </div>
+                            {% empty %}
+                            <p class="empty-text">Aucune donnée</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Par priorité -->
+                    <div class="chart-section">
+                        <h3>Réclamations par priorité</h3>
+                        <div class="priority-chart">
+                            {% for item in by_priority %}
+                            <div class="priority-item priority-{{ item.priority }}">
+                                <span class="priority-label">{{ priority_choices|get_item:item.priority }}</span>
+                                <span class="priority-count">{{ item.count }}</span>
+                            </div>
+                            {% empty %}
+                            <p class="empty-text">Aucune donnée</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Motifs récurrents -->
+                    <div class="chart-section">
+                        <h3>Top 5 des motifs récurrents</h3>
+                        <div class="top-motifs">
+                            {% for item in top_motifs %}
+                            <div class="motif-item">
+                                <span class="motif-rank">{{ forloop.counter }}</span>
+                                <span class="motif-name">{{ type_choices|get_item:item.type_reclamation }}</span>
+                                <span class="motif-count">{{ item.count }} réclamations</span>
+                            </div>
+                            {% empty %}
+                            <p class="empty-text">Aucune donnée</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Évolution mensuelle -->
+                    <div class="chart-section full-width">
+                        <h3>Évolution mensuelle (6 derniers mois)</h3>
+                        <div class="monthly-chart">
+                            {% for item in by_month %}
+                            <div class="month-bar">
+                                <div class="month-fill" style="height: {% widthratio item.count total 100 %}%"></div>
+                                <div class="month-label">{{ item.month|date:"M Y" }}</div>
+                                <div class="month-value">{{ item.count }}</div>
+                            </div>
+                            {% empty %}
+                            <p class="empty-text">Aucune donnée</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Réclamations récentes -->
+                <div class="recent-section">
+                    <h3>Réclamations récentes</h3>
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Référence</th>
+                                <th>Client</th>
+                                <th>Type</th>
+                                <th>Statut</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for rec in recent %}
+                            <tr>
+                                <td>
+                                    <a href="{% url 'reclamation_detail' rec.pk %}">{{ rec.reference }}</a>
+                                </td>
+                                <td>{{ rec.client.name }}</td>
+                                <td>{{ rec.get_type_reclamation_display }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ rec.status }}">{{ rec.get_status_display }}</span>
+                                </td>
+                                <td>{{ rec.created_at|date:"d/m/Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

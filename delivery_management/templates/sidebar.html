@@ -11,7 +11,10 @@
       <i class="fa fa-bars"></i>
     </li>
     <li>
-      <a href=""><i class="fa fa-tachometer-alt"></i><span>Dashboard</span></a>
+      <a href="{% url 'home' %}"><i class="fa fa-tachometer-alt"></i><span>Dashboard</span></a>
+    </li>
+    <li>
+      <a href="{% url 'expedition:wizard' %}"><i class="fa fa-box"></i><span>Nouvelle expédition</span></a>
     </li>
     <li>
       <a href="{% url 'clients' %}"
@@ -42,6 +45,9 @@
       <a href="{% url 'zones' %}"
         ><i class="fa fa-money-bill-wave"></i><span>Tarification</span></a
       >
+    </li>
+    <li>
+      <a href="{% url 'incident_list' %}"><i class="fa fa-exclamation-triangle"></i><span>Incidents</span></a>
     </li>
   </ul>
   <div id="overlay" onclick="toggleSidenav()"></div>
