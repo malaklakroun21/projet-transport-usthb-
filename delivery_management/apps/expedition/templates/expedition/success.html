@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expédition créée avec succès</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card border-0 shadow">
+                    <div class="card-body text-center p-5">
+                        <div class="mb-4">
+                            <div class="bg-success text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
+                                ✓
+                            </div>
+                        </div>
+                        
+                        <h3 class="text-success mb-3">Expédition créée avec succès!</h3>
+                        
+                        <div class="bg-light rounded p-4 mb-4">
+                            <h5 class="mb-3">Numéro de suivi</h5>
+                            <div class="display-6 text-primary fw-bold">
+                                {{ expedition.numero_suivi }}
+                            </div>
+                        </div>
+                        
+                        <div class="text-start mb-4">
+                            <table class="table table-borderless">
+                                <tr>
+                                    <td class="text-muted">Client:</td>
+                                    <td class="fw-bold">{{ expedition.client }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Destination:</td>
+                                    <td class="fw-bold">{{ expedition.destination }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Service:</td>
+                                    <td class="fw-bold">{{ expedition.type_service }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Poids:</td>
+                                    <td class="fw-bold">{{ expedition.poids }} kg</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Volume:</td>
+                                    <td class="fw-bold">{{ expedition.volume }} m³</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Montant Total:</td>
+                                    <td class="fw-bold text-success">{{ expedition.montant_total }} DA</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-muted">Statut:</td>
+                                    <td>
+                                        <span class="badge bg-{% if expedition.status == 'EN_ATTENTE' %}warning{% elif expedition.status == 'EN_COURS' %}primary{% else %}secondary{% endif %}">
+                                            {{ expedition.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% if expedition.tournee %}
+                                <tr>
+                                    <td class="text-muted">Tournée:</td>
+                                    <td class="fw-bold">{{ expedition.tournee }}</td>
+                                </tr>
+                                {% endif %}
+                            </table>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'expedition:wizard' %}" class="btn btn-primary btn-lg">
+                                Créer une nouvelle expédition
+                            </a>
+                            <a href="/" class="btn btn-outline-secondary">
+                                Retour à l'accueil
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
-from apps.expeditions.models import Expedition
+from apps.logistics.models import Expedition
 
 @login_required
 def admin_dashboard(request):
@@ -12,9 +12,9 @@ def admin_dashboard(request):
 
     context = {
         'total_expeditions': expeditions.count(),
-        'livrees': expeditions.filter(statut='livree').count(),
-        'en_cours': expeditions.filter(statut='en_cours').count(),
-        'creees': expeditions.filter(statut='cree').count(),
+        'livrees': expeditions.filter(status='LIVREE').count(),
+        'en_cours': expeditions.filter(status='EN_COURS').count(),
+        'creees': expeditions.filter(status='EN_ATTENTE').count(),
     }
 
     return render(request, 'dashboard/admin_dashboard.html', context)
@@ -29,9 +29,9 @@ def agent_dashboard(request):
 
     context = {
         'total_expeditions': expeditions.count(),
-        'livrees': expeditions.filter(statut='livree').count(),
-        'en_cours': expeditions.filter(statut='en_cours').count(),
-        'creees': expeditions.filter(statut='cree').count(),
+        'livrees': expeditions.filter(status='LIVREE').count(),
+        'en_cours': expeditions.filter(status='EN_COURS').count(),
+        'creees': expeditions.filter(status='EN_ATTENTE').count(),
     }
 
     return render(request, 'dashboard/agent_dashboard.html', context)

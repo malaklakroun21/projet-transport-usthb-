@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'apps.dashboard',
     'apps.clients',
     'apps.logistics',
-    'apps.expeditions',
+    'apps.expedition',
     'apps.facturation',
     'apps.incidents',
     'apps.reclamation',

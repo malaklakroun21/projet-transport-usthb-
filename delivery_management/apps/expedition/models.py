@@ -1,15 +1,15 @@
 from django.db import models
 from django.conf import settings
-from clients.models import Client
-from logistics.models import ServiceType, Destination, Vehicle, Driver
+from apps.clients.models import Client
+from apps.logistics.models import TypeService, Destination, Vehicule, Chauffeur
 import uuid
 import decimal
 
 
 class Tour(models.Model):
-    id_tour = models.DecimalField(max_digits=20, unique=True)
-    id_driver = models.ForeignKey(Driver, on_delete=models.PROTECT)
-    id_vehicle = models.ForeignKey(Vehicle, on_delete=models.PROTECT)
+    id_tour = models.AutoField(primary_key=True)
+    id_driver = models.ForeignKey(Chauffeur, on_delete=models.PROTECT)
+    id_vehicle = models.ForeignKey(Vehicule, on_delete=models.PROTECT)
     tour_date = models.DateField()
     starting_hour = models.TimeField()
     finishing_hour = models.TimeField()
@@ -23,7 +23,7 @@ class Tour(models.Model):
 class Shipment(models.Model):
     tracking_number = models.CharField(max_length=30, unique=True, editable=False)
     id_client = models.ForeignKey(Client, on_delete=models.CASCADE)
-    id_service_type = models.ForeignKey(ServiceType, on_delete=models.PROTECT)
+    id_service_type = models.ForeignKey(TypeService, on_delete=models.PROTECT)
     id_destination = models.ForeignKey(Destination, on_delete=models.PROTECT)
     id_tour = models.ForeignKey(Tour, on_delete=models.SET_NULL, null=True, blank=True)
     weight = models.FloatField()
