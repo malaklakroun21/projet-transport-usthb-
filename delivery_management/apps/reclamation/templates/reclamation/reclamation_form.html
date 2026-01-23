@@ -1,0 +1,143 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - TransportPro</title>
+    <link rel="stylesheet" href="{% static 'reclamation/css/reclamation.css' %}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h2>TransportPro</h2>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="{% url 'reclamation_list' %}" class="nav-item active">
+                    <span class="nav-icon">💬</span>
+                    Réclamations
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="content-header">
+                <a href="{% url 'reclamation_list' %}" class="close-btn">&times;</a>
+                <div class="header-date">
+                    {{ "now"|date:"l d F Y" }}
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <div class="form-container">
+                    <div class="form-header">
+                        <h2>{{ title }}</h2>
+                        <p>{% if reclamation %}Modifier la réclamation {{ reclamation.reference }}{% else %}Créer une nouvelle réclamation{% endif %}</p>
+                    </div>
+
+                    <form method="post" class="reclamation-form">
+                        {% csrf_token %}
+                        
+                        <div class="form-section">
+                            <h3>Informations client</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="id_client">Client *</label>
+                                    {{ form.client }}
+                                    {% if form.client.errors %}
+                                        <span class="error">{{ form.client.errors.0 }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Détails de la réclamation</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="id_type_reclamation">Nature de la réclamation *</label>
+                                    {{ form.type_reclamation }}
+                                    {% if form.type_reclamation.errors %}
+                                        <span class="error">{{ form.type_reclamation.errors.0 }}</span>
+                                    {% endif %}
+                                </div>
+                                <div class="form-group">
+                                    <label for="id_priority">Priorité</label>
+                                    {{ form.priority }}
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group full-width">
+                                    <label for="id_description">Description *</label>
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                                        <span class="error">{{ form.description.errors.0 }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Liens (optionnel)</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="id_shipments">Colis concernés</label>
+                                    {{ form.shipments }}
+                                    <small class="help-text">Maintenez Ctrl pour sélectionner plusieurs colis</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="id_invoice">Facture concernée</label>
+                                    {{ form.invoice }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-section">
+                            <h3>Attribution</h3>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="id_assigned_to">Agent responsable</label>
+                                    {{ form.assigned_to }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <a href="{% url 'reclamation_list' %}" class="btn-secondary">Annuler</a>
+                            <button type="submit" class="btn-primary">
+                                {% if reclamation %}Enregistrer{% else %}Créer la réclamation{% endif %}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Charger les expéditions quand le client change
+        document.getElementById('id_client').addEventListener('change', function() {
+            const clientId = this.value;
+            if (clientId) {
+                fetch(`/reclamations/api/client-shipments/?client_id=${clientId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const shipmentsSelect = document.getElementById('id_shipments');
+                        shipmentsSelect.innerHTML = '';
+                        data.forEach(shipment => {
+                            const option = document.createElement('option');
+                            option.value = shipment.id;
+                            option.textContent = shipment.tracking_number;
+                            shipmentsSelect.appendChild(option);
+                        });
+                    });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,97 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ title }} - TransportPro</title>
+    <link rel="stylesheet" href="{% static 'incidents/css/incidents.css' %}">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
+                </svg>
+                <div>
+                    <h1>TransportPro</h1>
+                    <span>Gestion logistique</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="{% url 'incident_list' %}" class="nav-item active">
+                    <span class="icon">⚠️</span>
+                    Incidents & Réclamations
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <a href="{% url 'incident_list' %}" class="close-btn">&times;</a>
+                <span class="date">{{ "now"|date:"l d F Y" }}</span>
+            </header>
+            
+            <div class="content">
+                <div class="form-container">
+                    <h1>{{ title }}</h1>
+                    
+                    {% if form.errors %}
+                        <div class="alert alert-error">
+                            {% for error in form.non_field_errors %}
+                                <p>{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post" class="incident-form">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="id_incident_type">Type d'incident</label>
+                            {{ form.incident_type }}
+                            {% if form.incident_type.errors %}
+                                <span class="error">{{ form.incident_type.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="id_shipment">Expédition (optionnel)</label>
+                                {{ form.shipment }}
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="id_tour">Tournée (optionnel)</label>
+                                {{ form.tour }}
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_priority">Priorité</label>
+                            {{ form.priority }}
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="id_description">Description</label>
+                            {{ form.description }}
+                            {% if form.description.errors %}
+                                <span class="error">{{ form.description.errors.0 }}</span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="form-actions">
+                            <a href="{% url 'incident_list' %}" class="btn-secondary">Annuler</a>
+                            <button type="submit" class="btn-primary">Enregistrer</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

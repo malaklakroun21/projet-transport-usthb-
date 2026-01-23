@@ -5,9 +5,7 @@ from apps.logistics.models import Shipment
 
 @login_required
 def admin_dashboard(request):
-    if request.user.role != 'admin':
-        return HttpResponseForbidden("Access denied")
-
+    # Permettre l'accès à tous les utilisateurs authentifiés
     expeditions = Shipment.objects.all()
 
     context = {
@@ -25,7 +23,9 @@ def agent_dashboard(request):
     if request.user.role != 'agent':
         return HttpResponseForbidden("Access denied")
 
-    expeditions = Shipment.objects.filter(created_by=request.user)
+    # Note: Le modèle Shipment n'a pas de champ created_by pour l'instant
+    # Afficher toutes les expéditions pour les agents
+    expeditions = Shipment.objects.all()
 
     context = {
         'total_expeditions': expeditions.count(),

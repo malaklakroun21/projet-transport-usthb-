@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Transport USTHB</title>
+    <link rel="stylesheet" href="{% static 'users/css/auth.css' %}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="auth-header">
+        <div class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+            </svg>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="auth-container">
+        <div class="auth-card">
+            <h1>Login</h1>
+            
+            {% if form.errors %}
+                <div class="error-message">Invalid username or password</div>
+            {% endif %}
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <!-- Username -->
+                <div class="form-group">
+                    <label for="id_username">Username</label>
+                    <input type="text" name="username" id="id_username" 
+                           value="{{ form.username.value|default:'' }}"
+                           placeholder="" autofocus>
+                </div>
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label for="id_password">Password</label>
+                    <input type="password" name="password" id="id_password" placeholder="">
+                </div>
+
+                <button type="submit" class="btn-primary">login</button>
+            </form>
+
+            <p class="auth-link">
+                Don't have an account? <a href="{% url 'register' %}">Register</a>
+            </p>
+        </div>
+    </main>
+</body>
+</html>

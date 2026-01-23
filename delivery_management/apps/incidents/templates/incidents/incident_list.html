@@ -1,0 +1,286 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incidents & Réclamations - TransportPro</title>
+    <link rel="stylesheet" href="{% static 'incidents/css/incidents.css' %}">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
+                </svg>
+                <div>
+                    <h1>TransportPro</h1>
+                    <span>Gestion logistique</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="{% url 'home' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Tableau de bord
+                </a>
+                <a href="{% url 'expedition:wizard' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    Nouvelle expédition
+                </a>
+                <a href="{% url 'drivers' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    Gestion des tables
+                </a>
+                <a href="#" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Facturation
+                </a>
+                <a href="{% url 'incident_list' %}" class="nav-item active">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    Incidents & Réclamations
+                </a>
+            </nav>
+            
+            <div class="user-info">
+                <div class="avatar">{{ request.user.username|slice:":2"|upper }}</div>
+                <div>
+                    <strong>{{ request.user.username }}</strong>
+                    <span>{{ request.user.role|default:"Agent" }}</span>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <button class="close-btn">&times;</button>
+                <span class="date">{{ "now"|date:"l d F Y" }}</span>
+            </header>
+            
+            <div class="content">
+                <div class="page-header">
+                    <div>
+                        <h1>Incidents & Réclamations</h1>
+                        <p>Gérer les incidents et réclamations clients</p>
+                    </div>
+                </div>
+                
+                <!-- Tabs -->
+                <div class="tabs">
+                    <a href="{% url 'incident_list' %}" class="tab active">
+                        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        Incidents
+                    </a>
+                    <a href="{% url 'reclamation_list' %}" class="tab">
+                        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                        Réclamations
+                    </a>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <span class="stat-value">{{ stats.ouverts }}</span>
+                        <span class="stat-label">Ouverts</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">{{ stats.en_cours }}</span>
+                        <span class="stat-label">En cours</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">{{ stats.resolus }}</span>
+                        <span class="stat-label">Résolus</span>
+                    </div>
+                    
+                    <button type="button" class="btn-primary" onclick="openModal('createIncidentModal')">
+                        <span>+</span> Déclarer un incident
+                    </button>
+                </div>
+                
+                <!-- Incidents Table -->
+                <div class="table-section">
+                    <h2>Liste des incidents</h2>
+                    
+                    <table class="incidents-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Expédition</th>
+                                <th>Description</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for incident in incidents %}
+                            <tr>
+                                <td>{{ incident.created_at|date:"Y-m-d" }}</td>
+                                <td>
+                                    <span class="badge badge-{{ incident.incident_type }}">
+                                        {{ incident.get_incident_type_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if incident.shipment %}
+                                        {{ incident.shipment.tracking_number }}
+                                    {% elif incident.tour %}
+                                        Tour #{{ incident.tour.id }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td class="description-cell">{{ incident.description|truncatewords:10 }}</td>
+                                <td>
+                                    <span class="status status-{{ incident.status }}">
+                                        {{ incident.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="actions">
+                                        <button class="btn-view" onclick="openDetailModal({{ incident.pk }})">Voir</button>
+                                        <select class="status-select" data-incident-id="{{ incident.pk }}" onchange="updateStatus(this)">
+                                            {% for value, label in status_choices %}
+                                                <option value="{{ value }}" {% if incident.status == value %}selected{% endif %}>
+                                                    {{ label }}
+                                                </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="empty-state">Aucun incident enregistré</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal Création Incident -->
+    <div id="createIncidentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Déclarer un incident</h2>
+                <button class="modal-close" onclick="closeModal('createIncidentModal')">&times;</button>
+            </div>
+            <form method="post" action="{% url 'incident_create' %}" class="modal-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="incident_type">Type d'incident *</label>
+                    <select name="incident_type" id="incident_type" class="form-control" required>
+                        <option value="">Sélectionner un type</option>
+                        <option value="retard">Retard</option>
+                        <option value="perte">Perte</option>
+                        <option value="endommagement">Endommagement</option>
+                        <option value="technique">Problème technique</option>
+                        <option value="autre">Autre</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="shipment">Expédition concernée</label>
+                    <select name="shipment" id="shipment" class="form-control">
+                        <option value="">Aucune</option>
+                        {% for shipment in shipments %}
+                        <option value="{{ shipment.id }}">{{ shipment.tracking_number }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="priority">Priorité</label>
+                    <select name="priority" id="priority" class="form-control">
+                        <option value="basse">Basse</option>
+                        <option value="moyenne" selected>Moyenne</option>
+                        <option value="haute">Haute</option>
+                        <option value="critique">Critique</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description *</label>
+                    <textarea name="description" id="description" class="form-control" rows="4" required placeholder="Décrivez l'incident en détail..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeModal('createIncidentModal')">Annuler</button>
+                    <button type="submit" class="btn-primary">Créer l'incident</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Détail Incident -->
+    <div id="detailIncidentModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h2>Détail de l'incident</h2>
+                <button class="modal-close" onclick="closeModal('detailIncidentModal')">&times;</button>
+            </div>
+            <div id="detailContent" class="modal-body">
+                <!-- Contenu chargé dynamiquement -->
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function openDetailModal(incidentId) {
+            fetch(`/incidents/${incidentId}/`)
+                .then(response => response.text())
+                .then(html => {
+                    // Extraire le contenu principal
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const content = doc.querySelector('.content') || doc.querySelector('.detail-container');
+                    if (content) {
+                        document.getElementById('detailContent').innerHTML = content.innerHTML;
+                    }
+                    openModal('detailIncidentModal');
+                });
+        }
+
+        // Fermer modal en cliquant à l'extérieur
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal(this.id);
+                }
+            });
+        });
+
+        function updateStatus(select) {
+            const incidentId = select.dataset.incidentId;
+            const newStatus = select.value;
+            
+            fetch(`/incidents/${incidentId}/status/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `status=${newStatus}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        }
+    </script>
+</body>
+</html>

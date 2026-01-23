@@ -10,7 +10,11 @@ def register_view(request):
         if form.is_valid():
             user = form.save()
             login(request, user)  # log in immediately after registration
-            return redirect('dashboard')
+            # Redirect based on user role
+            if user.role == 'admin':
+                return redirect('admin_dashboard')
+            else:
+                return redirect('agent_dashboard')
     else:
         form = CustomUserCreationForm()
     return render(request, 'users/register.html', {'form': form})

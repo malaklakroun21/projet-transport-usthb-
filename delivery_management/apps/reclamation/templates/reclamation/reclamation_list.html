@@ -1,0 +1,347 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Incidents & Réclamations - TransportPro</title>
+    <link rel="stylesheet" href="{% static 'incidents/css/incidents.css' %}">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
+                </svg>
+                <div>
+                    <h1>TransportPro</h1>
+                    <span>Gestion logistique</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="{% url 'home' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Tableau de bord
+                </a>
+                <a href="{% url 'expedition:wizard' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    Nouvelle expédition
+                </a>
+                <a href="{% url 'drivers' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    Gestion des tables
+                </a>
+                <a href="#" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Facturation
+                </a>
+                <a href="{% url 'reclamation_list' %}" class="nav-item active">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    Incidents & Réclamations
+                </a>
+            </nav>
+            
+            <div class="user-info">
+                <div class="avatar">{{ request.user.username|slice:":2"|upper }}</div>
+                <div>
+                    <strong>{{ request.user.username }}</strong>
+                    <span>{{ request.user.role|default:"Agent" }}</span>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <button class="close-btn">&times;</button>
+                <span class="date">{{ "now"|date:"l d F Y" }}</span>
+            </header>
+            
+            <div class="content">
+                <div class="page-header">
+                    <div>
+                        <h1>Incidents & Réclamations</h1>
+                        <p>Gérer les incidents et réclamations clients</p>
+                    </div>
+                </div>
+                
+                <!-- Tabs -->
+                <div class="tabs">
+                    <a href="{% url 'incident_list' %}" class="tab">
+                        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        Incidents
+                    </a>
+                    <a href="{% url 'reclamation_list' %}" class="tab active">
+                        <svg class="tab-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                        Réclamations
+                    </a>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <span class="stat-value">{{ stats.en_cours }}</span>
+                        <span class="stat-label">En cours</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">{{ stats.resolues }}</span>
+                        <span class="stat-label">Résolues</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-value">{{ stats.annulees }}</span>
+                        <span class="stat-label">Annulées</span>
+                    </div>
+                    
+                    <button type="button" class="btn-primary" onclick="openModal('createReclamationModal')">
+                        <span>+</span> Nouvelle réclamation
+                    </button>
+                </div>
+
+                <!-- Filters -->
+                <div class="filters-row">
+                    <form method="get" class="filters-form">
+                        <select name="status" class="filter-select">
+                            <option value="">Tous les statuts</option>
+                            <option value="en_cours" {% if request.GET.status == 'en_cours' %}selected{% endif %}>En cours</option>
+                            <option value="resolue" {% if request.GET.status == 'resolue' %}selected{% endif %}>Résolue</option>
+                            <option value="annulee" {% if request.GET.status == 'annulee' %}selected{% endif %}>Annulée</option>
+                        </select>
+                        <select name="type_reclamation" class="filter-select">
+                            <option value="">Tous les types</option>
+                            <option value="retard" {% if request.GET.type_reclamation == 'retard' %}selected{% endif %}>Retard</option>
+                            <option value="colis_endommage" {% if request.GET.type_reclamation == 'colis_endommage' %}selected{% endif %}>Colis endommagé</option>
+                            <option value="colis_perdu" {% if request.GET.type_reclamation == 'colis_perdu' %}selected{% endif %}>Colis perdu</option>
+                            <option value="erreur_facturation" {% if request.GET.type_reclamation == 'erreur_facturation' %}selected{% endif %}>Erreur facturation</option>
+                            <option value="service_client" {% if request.GET.type_reclamation == 'service_client' %}selected{% endif %}>Service client</option>
+                            <option value="autre" {% if request.GET.type_reclamation == 'autre' %}selected{% endif %}>Autre</option>
+                        </select>
+                        <select name="priority" class="filter-select">
+                            <option value="">Toutes priorités</option>
+                            <option value="basse" {% if request.GET.priority == 'basse' %}selected{% endif %}>Basse</option>
+                            <option value="normale" {% if request.GET.priority == 'normale' %}selected{% endif %}>Normale</option>
+                            <option value="haute" {% if request.GET.priority == 'haute' %}selected{% endif %}>Haute</option>
+                            <option value="urgente" {% if request.GET.priority == 'urgente' %}selected{% endif %}>Urgente</option>
+                        </select>
+                        <input type="text" name="search" class="filter-input" placeholder="Rechercher..." value="{{ request.GET.search }}">
+                        <button type="submit" class="btn-filter">Filtrer</button>
+                        {% if request.GET %}
+                        <a href="{% url 'reclamation_list' %}" class="btn-reset">×</a>
+                        {% endif %}
+                    </form>
+                </div>
+                
+                <!-- Reclamations Table -->
+                <div class="table-section">
+                    <h2>Liste des réclamations</h2>
+                    
+                    <table class="incidents-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Client</th>
+                                <th>Expédition</th>
+                                <th>Description</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reclamation in reclamations %}
+                            <tr>
+                                <td>{{ reclamation.created_at|date:"Y-m-d" }}</td>
+                                <td>{{ reclamation.client.name }}</td>
+                                <td>
+                                    {% for shipment in reclamation.shipments.all %}
+                                        {{ shipment.tracking_number }}{% if not forloop.last %}, {% endif %}
+                                    {% empty %}
+                                        -
+                                    {% endfor %}
+                                </td>
+                                <td class="description-cell">{{ reclamation.description|truncatewords:10 }}</td>
+                                <td>
+                                    <span class="status status-{{ reclamation.status }}">
+                                        {{ reclamation.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="actions">
+                                        <a href="{% url 'reclamation_detail' reclamation.pk %}" class="btn-view">Voir</a>
+                                        <select class="status-select" data-reclamation-id="{{ reclamation.pk }}" onchange="updateStatus(this)">
+                                            <option value="en_cours" {% if reclamation.status == 'en_cours' %}selected{% endif %}>En cours</option>
+                                            <option value="resolue" {% if reclamation.status == 'resolue' %}selected{% endif %}>Résolue</option>
+                                            <option value="annulee" {% if reclamation.status == 'annulee' %}selected{% endif %}>Annulée</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="empty-state">Aucune réclamation enregistrée</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script>
+        function updateStatus(select) {
+            const reclamationId = select.dataset.reclamationId;
+            const newStatus = select.value;
+            
+            fetch(`/reclamations/${reclamationId}/status/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: `status=${newStatus}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                }
+            });
+        }
+        
+        // Modal functions
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        
+        function openDetailModal(reclamationId) {
+            fetch(`/reclamations/${reclamationId}/detail-json/`)
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('detailClient').textContent = data.client || '-';
+                    document.getElementById('detailType').textContent = data.type_display || '-';
+                    document.getElementById('detailStatus').textContent = data.status_display || '-';
+                    document.getElementById('detailPriority').textContent = data.priority_display || '-';
+                    document.getElementById('detailDescription').textContent = data.description || '-';
+                    document.getElementById('detailCreatedAt').textContent = data.created_at || '-';
+                    openModal('detailReclamationModal');
+                });
+        }
+        
+        // Close modal when clicking outside
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeModal(this.id);
+                }
+            });
+        });
+        
+        // Close modal on Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    closeModal(modal.id);
+                });
+            }
+        });
+    </script>
+    
+    <!-- Modal de création de réclamation -->
+    <div id="createReclamationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nouvelle réclamation</h2>
+                <button type="button" class="modal-close" onclick="closeModal('createReclamationModal')">&times;</button>
+            </div>
+            <form method="post" action="{% url 'reclamation_create' %}" class="modal-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="client">Client</label>
+                    <select name="client" id="client" required class="form-control">
+                        <option value="">Sélectionner un client</option>
+                        {% for client in clients %}
+                        <option value="{{ client.id }}">{{ client.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="type_reclamation">Type</label>
+                    <select name="type_reclamation" id="type_reclamation" required class="form-control">
+                        <option value="">Sélectionner un type</option>
+                        <option value="retard">Retard de livraison</option>
+                        <option value="colis_endommage">Colis endommagé</option>
+                        <option value="colis_perdu">Colis perdu</option>
+                        <option value="erreur_facturation">Erreur de facturation</option>
+                        <option value="service_client">Service client</option>
+                        <option value="autre">Autre</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="priority">Priorité</label>
+                    <select name="priority" id="priority" required class="form-control">
+                        <option value="normale">Normale</option>
+                        <option value="basse">Basse</option>
+                        <option value="haute">Haute</option>
+                        <option value="urgente">Urgente</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea name="description" id="description" rows="4" required class="form-control" placeholder="Décrivez la réclamation..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeModal('createReclamationModal')">Annuler</button>
+                    <button type="submit" class="btn-primary">Créer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Modal de détail de réclamation -->
+    <div id="detailReclamationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Détail de la réclamation</h2>
+                <button type="button" class="modal-close" onclick="closeModal('detailReclamationModal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-row">
+                    <span class="detail-label">Client:</span>
+                    <span id="detailClient" class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Type:</span>
+                    <span id="detailType" class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Statut:</span>
+                    <span id="detailStatus" class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Priorité:</span>
+                    <span id="detailPriority" class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Date de création:</span>
+                    <span id="detailCreatedAt" class="detail-value">-</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Description:</span>
+                    <p id="detailDescription" class="detail-description">-</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeModal('detailReclamationModal')">Fermer</button>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

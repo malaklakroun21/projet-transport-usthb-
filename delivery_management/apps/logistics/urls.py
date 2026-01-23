@@ -37,7 +37,7 @@ urlpatterns = [
     path('create-zone/', views.create_zone, name='create-zone'),              
     path('update-zone/<str:pk>/', views.update_zone, name='update-zone'),
     path('delete-zone/<str:pk>/', views.delete_zone, name='delete-zone'),
-    path('export-zones-csv/', views. export_zones_csv, name='export-zones-csv'), 
+    path('export-zones-csv/', views.export_zones_csv, name='export-zones-csv'), 
 
   
 ]

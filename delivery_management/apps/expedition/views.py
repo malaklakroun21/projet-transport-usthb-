@@ -79,22 +79,21 @@ def expedition_wizard(request):
                 
                 expedition = Shipment.objects.create(
                     client_id=expedition_data['client_id'],
-                    type_service_id=expedition_data['type_service_id'],
+                    service_type_id=expedition_data['type_service_id'],
                     destination_id=expedition_data['destination_id'],
-                    poids=expedition_data['poids'],
+                    weight=expedition_data['poids'],
                     volume=expedition_data['volume'],
                     description=expedition_data['description'],
-                    date_livraison_estimee=expedition_data['date_livraison_estimee'],
-                    montant_total=expedition_data['montant_total'],
-                    numero_suivi=f"EXP-{uuid.uuid4().hex[:8].upper()}",
-                    tournee=tournee,
+                    estimated_delivery_date=expedition_data['date_livraison_estimee'],
+                    total_price=expedition_data['montant_total'],
+                    tour=tournee,
                     status='EN_ATTENTE' if not tournee else 'EN_COURS'
                 )
                 
                 # Nettoyer la session
                 del request.session['expedition_data']
                 
-                messages.success(request, f"Expédition {expedition.numero_suivi} créée avec succès!")
+                messages.success(request, f"Expédition {expedition.tracking_number} créée avec succès!")
                 return redirect('expedition:success', pk=expedition.pk)
     
     else:

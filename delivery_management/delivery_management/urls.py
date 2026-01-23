@@ -20,10 +20,12 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('users/', include('apps.users.urls')),
+    path('', include('apps.dashboard.urls')),  # Dashboard as homepage
     path('dashboard/', include('apps.dashboard.urls')),
     path('expedition/', include('apps.expedition.urls')),
-    path("", include("apps.clients.urls")),
-  # Vue pour /la page d'accueil
+    path('incidents/', include('apps.incidents.urls')),
+    path('reclamations/', include('apps.reclamation.urls')),
+    path('clients/', include("apps.clients.urls")),
     path("logistics/", include("apps.logistics.urls")),
 ]
 

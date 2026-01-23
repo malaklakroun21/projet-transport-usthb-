@@ -327,9 +327,9 @@ def create_zone(request):
 
 def update_zone(request, pk):
     zone = get_object_or_404(Zone, pk=pk)
-    form = ZoneForm(instance=zone)
+    form = zoneForm(instance=zone)
     if request.method == 'POST':
-        form = ZoneForm(request.POST, instance=zone)
+        form = zoneForm(request.POST, instance=zone)
         if form.is_valid():
             form.save()
             return redirect('zones')

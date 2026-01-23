@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistiques Incidents - TransportPro</title>
+    <link rel="stylesheet" href="{% static 'incidents/css/incidents.css' %}">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
+                </svg>
+                <div>
+                    <h1>TransportPro</h1>
+                    <span>Gestion logistique</span>
+                </div>
+            </div>
+            
+            <nav class="nav-menu">
+                <a href="{% url 'incident_list' %}" class="nav-item">
+                    <span class="icon">⚠️</span>
+                    Incidents & Réclamations
+                </a>
+                <a href="{% url 'incident_stats' %}" class="nav-item active">
+                    <span class="icon">📈</span>
+                    Reporting
+                </a>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="header">
+                <a href="{% url 'incident_list' %}" class="close-btn">&times;</a>
+                <span class="date">{{ "now"|date:"l d F Y" }}</span>
+            </header>
+            
+            <div class="content">
+                <div class="page-header">
+                    <h1>Statistiques des Incidents</h1>
+                    <p>Analyse et reporting des incidents</p>
+                </div>
+                
+                <div class="stats-grid">
+                    <!-- Par Type -->
+                    <div class="card">
+                        <h3>Incidents par type</h3>
+                        <div class="chart-placeholder">
+                            {% for item in by_type %}
+                            <div class="stat-bar">
+                                <span class="stat-label">{{ item.incident_type }}</span>
+                                <div class="bar-container">
+                                    <div class="bar" style="width: {{ item.count|divisibleby:1 }}0%;"></div>
+                                </div>
+                                <span class="stat-count">{{ item.count }}</span>
+                            </div>
+                            {% empty %}
+                            <p class="empty-text">Aucune donnée</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Par Statut -->
+                    <div class="card">
+                        <h3>Incidents par statut</h3>
+                        <div class="status-grid">
+                            {% for item in by_status %}
+                            <div class="status-card status-{{ item.status }}">
+                                <span class="count">{{ item.count }}</span>
+                                <span class="label">{{ item.status }}</span>
+                            </div>
+                            {% empty %}
+                            <p class="empty-text">Aucune donnée</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Par Mois -->
+                    <div class="card full-width">
+                        <h3>Évolution mensuelle</h3>
+                        <div class="monthly-chart">
+                            {% for item in by_month %}
+                            <div class="month-bar">
+                                <div class="bar" style="height: {{ item.count|default:0 }}px;"></div>
+                                <span class="month-label">{{ item.month|date:"M Y" }}</span>
+                                <span class="month-count">{{ item.count }}</span>
+                            </div>
+                            {% empty %}
+                            <p class="empty-text">Aucune donnée</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

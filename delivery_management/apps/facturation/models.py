@@ -8,47 +8,43 @@ class Invoice(models.Model):
     TVA_RATE = Decimal('0.19')
     client = models.ForeignKey(Client, on_delete=models.CASCADE)
     shipments = models.ManyToManyField(Shipment)
-    amount_ht = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
-    amount_tva = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
-    amount_ttc = models.DecimalField(max_digits=10, decimal_places=2, editable=False)
+    amount_ht = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
+    amount_tva = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
+    amount_ttc = models.DecimalField(max_digits=10, decimal_places=2, editable=False, default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
-#CALCULE HT, TVA, TTC
+    # CALCULE HT, TVA, TTC
 
-
-def calculate_amount_ht(self):
+    def calculate_amount_ht(self):
         return sum(
             (shipment.total_price for shipment in self.shipments.all()),
             Decimal('0.00')
         )
-def calculate_totals(self):
+
+    def calculate_totals(self):
         self.amount_ht = self.calculate_amount_ht()
         self.amount_tva = self.amount_ht * self.TVA_RATE
         self.amount_ttc = self.amount_ht + self.amount_tva
 
-
-def save(self, *args, **kwargs):
+    def save(self, *args, **kwargs):
         super().save(*args, **kwargs)  # save first (M2M needs ID)
         self.calculate_totals()
         super().save(update_fields=['amount_ht', 'amount_tva', 'amount_ttc'])
 
-
-def total_paid(self):
+    def total_paid(self):
         return sum(
             (p.amount for p in self.payment_set.all()),
             Decimal('0.00')
         )
 
-def remaining_amount(self):
+    def remaining_amount(self):
         return self.amount_ttc - self.total_paid()
 
-
-def delete(self, *args, **kwargs):
+    def delete(self, *args, **kwargs):
         remaining = self.remaining_amount()
         if remaining > 0:
             self.client.balance -= remaining
             self.client.save()
-
         super().delete(*args, **kwargs)
 
 
