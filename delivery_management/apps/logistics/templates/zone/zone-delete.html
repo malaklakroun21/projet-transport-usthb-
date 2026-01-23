@@ -1,0 +1,19 @@
+{% extends 'main.html' %} {% load static %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/driver-delete.css' %}" />
+{% endblock %} {% block content %}
+<section class="delete-page">
+  <div class="delete-card">
+    <div class="icon"><i class="fa fa-trash"></i></div>
+    <h2>Supprimer Zone</h2>
+    <p>Êtes-vous sûr de vouloir supprimer <strong>{{ zone.name }}</strong> ?</p>
+    <p class="warning">Cette action est <strong>irréversible</strong>.</p>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="actions">
+        <button type="submit" class="btn danger">Supprimer</button>
+        <a href="{% url 'zones' %}" class="btn cancel">Annuler</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

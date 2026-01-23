@@ -1,0 +1,115 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/driver.css' %}" />
+{% endblock %}
+
+{% block content %}
+
+<section class="clients-page">
+
+  <!-- Page title + search -->
+  <div class="clients-header">
+    <h2>Gestion des Chauffeurs</h2>
+
+    <div class="search-box">
+      <i class="fa fa-search"></i>
+      <form method="GET" action="">
+        <input type="text" name="q" placeholder="Rechercher par nom ou téléphone..."
+               value="{{ query|default:'' }}">
+      </form>
+    </div>
+  </div>
+
+  <!-- Actions bar -->
+  <div class="clients-actions">
+    <a href="{% url 'create-driver' %}" class="btn primary">
+      <i class="fa fa-plus"></i> Nouveau Chauffeur
+    </a>
+
+    <button class="btn" onclick="printDriversTable()">
+      <i class="fa fa-print"></i> Imprimer la liste
+    </button>
+
+    <a href="{% url 'export-drivers-csv' %}" class="btn">
+      <i class="fa fa-file-export"></i> Exporter la liste
+    </a>
+
+    <form method="GET" class="filter-form">
+      <select name="available" class="status-filter" onchange="this.form.submit()">
+        <option value="ALL" {% if available == 'ALL' %}selected{% endif %}>Tous</option>
+        <option value="YES" {% if available == 'YES' %}selected{% endif %}>Disponible</option>
+        <option value="NO" {% if available == 'NO' %}selected{% endif %}>Indisponible</option>
+      </select>
+      <input type="hidden" name="q" value="{{ query|default:'' }}">
+    </form>
+  </div>
+
+  <!-- Table -->
+  <div class="table-container">
+    <table class="clients-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Prénom</th>
+          <th>Nom</th>
+          <th>Téléphone</th>
+          <th>Permis</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for driver in drivers %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ driver.first_name }}</td>
+          <td>{{ driver.last_name }}</td>
+          <td>{{ driver.phone }}</td>
+          <td>{{ driver.license_number }}</td>
+          <td>
+            {% if driver.available %}
+              <span class="status actif">Disponible</span>
+            {% else %}
+              <span class="status inactif">Indisponible</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{% url 'update-driver' driver.id %}" class="btn small">
+              <i class="fa fa-edit"></i> Modifier
+            </a>
+            <a href="{% url 'delete-driver' driver.id %}" class="btn small danger">
+              <i class="fa fa-trash"></i> Supprimer
+            </a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="7" style="text-align:center;">Aucun chauffeur trouvé</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</section>
+
+<script>
+function printDriversTable() {
+    window.print();
+}
+
+// Optional: live search
+const searchInput = document.querySelector(".search-box input");
+const tableRows = document.querySelectorAll(".clients-table tbody tr");
+searchInput.addEventListener("input", function() {
+    const filter = this.value.toLowerCase();
+    tableRows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(filter) ? "" : "none";
+    });
+});
+</script>
+
+{% endblock %}

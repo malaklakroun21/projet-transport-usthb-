@@ -1,0 +1,37 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/clients-delete.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="delete-page">
+  <div class="delete-card">
+
+    <div class="icon">
+      <i class="fa fa-trash"></i>
+    </div>
+
+    <h2>Supprimer Chauffeur</h2>
+
+    <p>
+      Êtes-vous sûr de vouloir supprimer le chauffeur
+      <strong>{{ driver.first_name }} {{ driver.last_name }}</strong> ?
+    </p>
+
+    <p class="warning">
+      Cette action est <strong>irréversible</strong>.
+    </p>
+
+    <form method="POST">
+      {% csrf_token %}
+      <div class="actions">
+        <button type="submit" class="btn danger">Supprimer</button>
+        <a href="{% url 'drivers' %}" class="btn cancel">Annuler</a>
+      </div>
+    </form>
+
+  </div>
+</section>
+{% endblock %}

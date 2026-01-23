@@ -11,29 +11,35 @@
       <i class="fa fa-bars"></i>
     </li>
     <li>
-      <a href="#"><i class="fa fa-tachometer-alt"></i><span>Dashboard</span></a>
+      <a href=""><i class="fa fa-tachometer-alt"></i><span>Dashboard</span></a>
     </li>
     <li>
-      <a href="#"><i class="fa fa-users"></i><span>Clients</span></a>
+      <a href="{% url 'clients' %}"
+        ><i class="fa fa-users"></i><span>Clients</span></a
+      >
     </li>
     <li>
-      <a href="#"><i class="fa fa-id-badge"></i><span>Chauffeurs</span></a>
+      <a href="{% url 'drivers' %}"
+        ><i class="fa fa-id-badge"></i><span>Chauffeurs</span></a
+      >
     </li>
     <li>
-      <a href="#"><i class="fa fa-car-side"></i><span>Vehicules</span></a>
+      <a href="{% url 'vehicles' %}"
+        ><i class="fa fa-car-side"></i><span>Vehicules</span></a
+      >
     </li>
     <li>
-      <a href="#"
+      <a href="{% url 'destinations' %}"
         ><i class="fa fa-map-marker-alt"></i><span>Destination</span></a
       >
     </li>
     <li>
-      <a href="#"
+      <a href="{% url 'service-types' %}"
         ><i class="fa fa-shipping-fast"></i><span>Type de livraison</span></a
       >
     </li>
     <li>
-      <a href="#"
+      <a href="{% url 'zones' %}"
         ><i class="fa fa-money-bill-wave"></i><span>Tarification</span></a
       >
     </li>
