@@ -1,0 +1,106 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account - Transport USTHB</title>
+    <link rel="stylesheet" href="{% static 'users/css/auth.css' %}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="auth-header">
+        <div class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+            </svg>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="auth-container">
+        <div class="auth-card">
+            <h1>Create account</h1>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <!-- Full Name (username) -->
+                <div class="form-group">
+                    <label for="id_username">Full name</label>
+                    <input type="text" name="username" id="id_username" 
+                           value="{{ form.username.value|default:'' }}"
+                           placeholder="">
+                    {% if form.username.errors %}
+                        <ul class="error-list">
+                            {% for error in form.username.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Email -->
+                <div class="form-group">
+                    <label for="id_email">Email</label>
+                    <input type="email" name="email" id="id_email" 
+                           value="{{ form.email.value|default:'' }}"
+                           placeholder="">
+                    {% if form.email.errors %}
+                        <ul class="error-list">
+                            {% for error in form.email.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Password -->
+                <div class="form-group">
+                    <label for="id_password1">Password</label>
+                    <input type="password" name="password1" id="id_password1" placeholder="">
+                    {% if form.password1.errors %}
+                        <ul class="error-list">
+                            {% for error in form.password1.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Confirm Password -->
+                <div class="form-group">
+                    <label for="id_password2">Confirm Password</label>
+                    <input type="password" name="password2" id="id_password2" placeholder="">
+                    {% if form.password2.errors %}
+                        <ul class="error-list">
+                            {% for error in form.password2.errors %}
+                                <li>{{ error }}</li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </div>
+
+                <!-- Hidden role field (default to agent) -->
+                <input type="hidden" name="role" value="agent">
+
+                <!-- Non-field errors -->
+                {% if form.non_field_errors %}
+                    <ul class="error-list">
+                        {% for error in form.non_field_errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <button type="submit" class="btn-primary">register</button>
+            </form>
+
+            <p class="auth-link">
+                already have an account ? <a href="{% url 'login' %}">login</a>
+            </p>
+        </div>
+    </main>
+</body>
+</html>
+

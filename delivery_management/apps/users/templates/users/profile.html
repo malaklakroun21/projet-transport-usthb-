@@ -1,0 +1,59 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Transport USTHB</title>
+    <link rel="stylesheet" href="{% static 'users/css/auth.css' %}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="auth-header">
+        <div class="logo">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+            </svg>
+        </div>
+    </header>
+
+    <!-- Main -->
+    <main class="auth-container">
+        <div class="auth-card">
+            <!-- Avatar -->
+            <div class="profile-avatar">
+                {{ user.username|slice:":1"|upper }}
+            </div>
+            
+            <h1>My Profile</h1>
+            
+            <!-- Profile Info -->
+            <div class="profile-info">
+                <div class="profile-info-item">
+                    <span class="profile-info-label">Username</span>
+                    <span class="profile-info-value">{{ user.username }}</span>
+                </div>
+                <div class="profile-info-item">
+                    <span class="profile-info-label">Email</span>
+                    <span class="profile-info-value">{{ user.email }}</span>
+                </div>
+                <div class="profile-info-item">
+                    <span class="profile-info-label">Role</span>
+                    <span class="role-badge {{ user.role }}">{{ user.role }}</span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="profile-actions">
+                {% if user.role == 'admin' %}
+                    <a href="{% url 'admin_dashboard' %}" class="btn-primary">Go to Dashboard</a>
+                {% else %}
+                    <a href="{% url 'agent_dashboard' %}" class="btn-primary">Go to Dashboard</a>
+                {% endif %}
+                <a href="{% url 'logout' %}" class="btn-danger">Logout</a>
+            </div>
+        </div>
+    </main>
+</body>
+</html>
+
