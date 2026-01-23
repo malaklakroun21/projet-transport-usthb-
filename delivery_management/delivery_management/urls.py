@@ -23,6 +23,7 @@ urlpatterns = [
     path('dashboard/', include('apps.dashboard.urls')),
     path('expedition/', include('apps.expedition.urls')),
     path("", include("apps.clients.urls")),
+  # Vue pour /la page d'accueil
     path("logistics/", include("apps.logistics.urls")),
 ]
 
