@@ -41,11 +41,11 @@ INSTALLED_APPS = [
     'apps.users',
     'apps.dashboard',
     'apps.clients',
-    'apps.logistics',
-    'apps.expedition',
-    'apps.facturation',
     'apps.incidents',
+    'apps.expedition',
     'apps.reclamation',
+    'apps.logistics',
+    'apps.facturation',
 ]
 
 MIDDLEWARE = [
@@ -64,7 +64,9 @@ ROOT_URLCONF = 'delivery_management.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [
+            BASE_DIR / 'templates'
+            ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -76,6 +78,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'delivery_management.wsgi.application'
 
@@ -126,7 +129,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
 STATIC_URL = 'static/'
-
+STATICFILES_DIRS = [
+    BASE_DIR / 'static',
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 

@@ -1,0 +1,90 @@
+{% extends 'main.html' %} {% load static %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/vehicle.css' %}" />
+{% endblock %} {% block content %}
+<section class="clients-page">
+  <div class="clients-header">
+    <h2>Gestion des Véhicules</h2>
+
+    <div class="search-box">
+      <i class="fa fa-search"></i>
+      <form method="GET" action="">
+        <input
+          type="text"
+          name="q"
+          placeholder="Rechercher par nom ou plaque ..."
+          value="{{ query|default:'' }}"
+        />
+      </form>
+    </div>
+  </div>
+
+  <div class="clients-actions">
+    <a href="{% url 'create-vehicle' %}" class="btn primary">
+      <i class="fa fa-plus"></i> Nouveau Véhicule
+    </a>
+
+    <button class="btn" onclick="printVehiclesTable()">
+      <i class="fa fa-print"></i> Imprimer la liste
+    </button>
+
+    <a href="{% url 'export-vehicles-csv' %}" class="btn">
+      <i class="fa fa-file-export"></i> Exporter la liste
+    </a>
+  </div>
+
+  <div class="table-container">
+    <table class="clients-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Plaque</th>
+          <th>Type</th>
+          <th>Capacité</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for vehicle in vehicles %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ vehicle.plate_number }}</td>
+          <td>{{ vehicle.vehicle_type }}</td>
+          <td>{{ vehicle.capacity }}</td>
+          <td>{{ vehicle.status }}</td>
+          <td>
+            <a href="{% url 'update-vehicle' vehicle.id %}" class="btn small"
+              ><i class="fa fa-edit"></i> Modifier</a
+            >
+            <a
+              href="{% url 'delete-vehicle' vehicle.id %}"
+              class="btn small danger"
+              ><i class="fa fa-trash"></i> Supprimer</a
+            >
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align: center">Aucun véhicule trouvé</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+  function printVehiclesTable() {
+    window.print();
+  }
+  const searchInput = document.querySelector(".search-box input");
+  const tableRows = document.querySelectorAll(".clients-table tbody tr");
+  searchInput.addEventListener("input", function () {
+    const filter = this.value.toLowerCase();
+    tableRows.forEach((row) => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(filter) ? "" : "none";
+    });
+  });
+</script>
+{% endblock %}

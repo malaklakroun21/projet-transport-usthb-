@@ -1,0 +1,111 @@
+/* Page layout */
+.delete-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #f8fafc, #eef2ff);
+  padding: 20px;
+}
+
+/* Card */
+.delete-card {
+  background: #ffffff;
+  max-width: 420px;
+  width: 100%;
+  padding: 35px;
+  border-radius: 18px;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.12);
+  animation: fadeIn 0.3s ease;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Icon */
+.delete-card .icon {
+  width: 70px;
+  height: 70px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.delete-card .icon i {
+  font-size: 30px;
+  color: #ef4444;
+}
+
+/* Title */
+.delete-card h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: #111827;
+}
+
+/* Text */
+.delete-card p {
+  font-size: 14px;
+  color: #374151;
+  margin-bottom: 10px;
+}
+
+.delete-card .warning {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 15px;
+  margin-top: 30px;
+}
+
+/* Buttons */
+.btn {
+  flex: 1;
+  padding: 12px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  border: none;
+}
+
+/* Delete */
+.btn.danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn.danger:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 15px 35px rgba(220, 38, 38, 0.4);
+}
+
+/* Cancel */
+.btn.cancel {
+  background: #e5e7eb;
+  color: #374151;
+}
+
+.btn.cancel:hover {
+  background: #d1d5db;
+}

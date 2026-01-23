@@ -1,0 +1,22 @@
+{% extends 'main.html' %} {% load static %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/driver-delete.css' %}" />
+{% endblock %} {% block content %}
+<section class="delete-page">
+  <div class="delete-card">
+    <div class="icon"><i class="fa fa-trash"></i></div>
+    <h2>Supprimer Type de Livraison</h2>
+    <p>
+      Êtes-vous sûr de vouloir supprimer
+      <strong>{{ servicetype.name }}</strong> ?
+    </p>
+    <p class="warning">Cette action est <strong>irréversible</strong>.</p>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="actions">
+        <button type="submit" class="btn danger">Supprimer</button>
+        <a href="{% url 'service-types' %}" class="btn cancel">Annuler</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

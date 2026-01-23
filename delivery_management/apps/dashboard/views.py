@@ -1,14 +1,14 @@
 from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseForbidden
-from apps.logistics.models import Expedition
+from apps.logistics.models import Shipment
 
 @login_required
 def admin_dashboard(request):
     if request.user.role != 'admin':
         return HttpResponseForbidden("Access denied")
 
-    expeditions = Expedition.objects.all()
+    expeditions = Shipment.objects.all()
 
     context = {
         'total_expeditions': expeditions.count(),
@@ -25,7 +25,7 @@ def agent_dashboard(request):
     if request.user.role != 'agent':
         return HttpResponseForbidden("Access denied")
 
-    expeditions = Expedition.objects.filter(created_by=request.user)
+    expeditions = Shipment.objects.filter(created_by=request.user)
 
     context = {
         'total_expeditions': expeditions.count(),

@@ -1,34 +1,34 @@
 from django.contrib import admin
-from .models import Expedition 
-from .models import Chauffeur, Vehicule, Tournee, TypeService, Destination
+from .models import Shipment 
+from .models import Driver, Vehicle, Tour, ServiceType, Destination
 # Register your models here.
 
-@admin.register(Expedition)
+@admin.register(Shipment)
 class ExpeditionAdmin(admin.ModelAdmin):
-    list_display = ('numero_suivi', 'client', 'status', 'type_service', 'destination', 'tournee', 'montant_total', 'date_creation')
-    list_filter = ('status', 'type_service', 'date_creation')
-    search_fields = ('numero_suivi', 'client__nom', 'destination__ville')
+    list_display = ('tracking_number', 'client', 'status', 'service_type', 'destination', 'tour', 'total_price', 'created_at')
+    list_filter = ('status', 'service_type', 'created_at')
+    search_fields = ('tracking_number', 'client__last_name', 'destination__city')
 
-@admin.register(Chauffeur)
+@admin.register(Driver)
 class ChauffeurAdmin(admin.ModelAdmin):
-    list_display = ('nom', 'telephone')
-    search_fields = ('nom',)
+    list_display = ('last_name', 'phone')
+    search_fields = ('last_name',)
 
-@admin.register(Vehicule)
+@admin.register(Vehicle)
 class VehiculeAdmin(admin.ModelAdmin):
-    list_display = ('immatriculation', 'type')
-    search_fields = ('immatriculation',)
+    list_display = ('plate_number', 'vehicle_type')
+    search_fields = ('plate_number',)
 
-@admin.register(Tournee)
+@admin.register(Tour)
 class TourneeAdmin(admin.ModelAdmin):
-    list_display = ('date', 'chauffeur', 'vehicule')
-    list_filter = ('date',)
+    list_display = ('tour_date', 'driver', 'vehicle')
+    list_filter = ('tour_date',)
 
 @admin.register(Destination)
 class DestinationAdmin(admin.ModelAdmin):
-    list_display = ('ville', 'pays', 'code_postal')
-    search_fields = ('ville', 'pays')
+    list_display = ('city', 'country', 'postal_code')
+    search_fields = ('city', 'country')
 
-@admin.register(TypeService)
-class TypeServiceAdmin(admin.ModelAdmin):
-    list_display = ('nom',)
+@admin.register(ServiceType)
+class ServiceTypeAdmin(admin.ModelAdmin):
+    list_display = ('name',)

@@ -1,0 +1,81 @@
+{% extends 'main.html' %} {% load static %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/driver.css' %}" />
+{% endblock %} {% block content %}
+<section class="clients-page">
+  <div class="clients-header">
+    <h2>Gestion des Tarifications (Zones)</h2>
+    <div class="search-box">
+      <i class="fa fa-search"></i>
+      <form method="GET">
+        <input
+          type="text"
+          name="q"
+          placeholder="Rechercher par nom de zone..."
+          value="{{ query|default:'' }}"
+        />
+      </form>
+    </div>
+  </div>
+
+  <div class="clients-actions">
+    <a href="{% url 'create-zone' %}" class="btn primary"
+      ><i class="fa fa-plus"></i> Nouvelle Zone</a
+    >
+    <button class="btn" onclick="printZonesTable()">
+      <i class="fa fa-print"></i> Imprimer
+    </button>
+    <a href="{% url 'export-zones-csv' %}" class="btn"
+      ><i class="fa fa-file-export"></i> Exporter</a
+    >
+  </div>
+
+  <div class="table-container">
+    <table class="clients-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nom</th>
+          <th>Prix de base</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for z in zones %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td>{{ z.name }}</td>
+          <td>{{ z.base_price }}</td>
+          <td>
+            <a href="{% url 'update-zone' z.id %}" class="btn small"
+              ><i class="fa fa-edit"></i> Modifier</a
+            >
+            <a href="{% url 'delete-zone' z.id %}" class="btn small danger"
+              ><i class="fa fa-trash"></i> Supprimer</a
+            >
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" style="text-align: center">Aucune zone trouvée</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+  function printZonesTable() {
+    window.print();
+  }
+  const searchInput = document.querySelector(".search-box input");
+  const tableRows = document.querySelectorAll(".clients-table tbody tr");
+  searchInput.addEventListener("input", function () {
+    const filter = this.value.toLowerCase();
+    tableRows.forEach((row) => {
+      const text = row.textContent.toLowerCase();
+      row.style.display = text.includes(filter) ? "" : "none";
+    });
+  });
+</script>
+{% endblock %}

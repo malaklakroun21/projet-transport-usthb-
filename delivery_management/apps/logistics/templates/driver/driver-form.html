@@ -1,0 +1,27 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/clients-form.css' %}" />
+{% endblock %}
+
+{% block content %}
+<section class="add-client-page">
+  <div class="form-wrapper">
+    <h2>
+      {% if form.instance.pk %} Modifier Driver {% else %} Ajouter Nouveau Driver {% endif %}
+    </h2>
+
+    <form method="POST">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <div class="form-actions">
+        <button type="submit" class="btn primary">
+          {% if form.instance.pk %}Modifier{% else %}Ajouter{% endif %}
+        </button>
+        <a href="{% url 'drivers' %}" class="btn cancel">Annuler</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

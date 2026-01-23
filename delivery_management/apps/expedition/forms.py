@@ -1,6 +1,6 @@
 from django import forms
 from apps.clients.models import Client
-from apps.logistics.models import TypeService, Destination, Tournee
+from apps.logistics.models import ServiceType, Destination, Tour
 
 
 class Step1ClientForm(forms.Form):
@@ -19,7 +19,7 @@ class Step1ClientForm(forms.Form):
 class Step2ServiceDestinationForm(forms.Form):
     """Étape 2: Service et Destination"""
     type_service = forms.ModelChoiceField(
-        queryset=TypeService.objects.all(),
+        queryset=ServiceType.objects.all(),
         label="Type de service",
         widget=forms.Select(attrs={
             'class': 'form-control',
@@ -80,7 +80,7 @@ class Step3ColisDetailsForm(forms.Form):
 class Step4AffectationForm(forms.Form):
     """Étape 4: Affectation à une tournée"""
     tournee = forms.ModelChoiceField(
-        queryset=Tournee.objects.all(),
+        queryset=Tour.objects.all(),
         label="Tournée",
         required=False,
         widget=forms.Select(attrs={

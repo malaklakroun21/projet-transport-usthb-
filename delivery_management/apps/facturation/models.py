@@ -1,7 +1,7 @@
 from decimal import Decimal
 from django.db import models
 from apps.clients.models import Client
-from apps.expedition.models import Shipment
+from apps.logistics.models import Shipment
 
 
 class Invoice(models.Model):

@@ -1,0 +1,120 @@
+/* Page background */
+.add-client-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f4f6f9;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+/* Form card */
+.form-wrapper {
+  background: #ffffff;
+  padding: 30px 35px;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 14px;
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+}
+
+/* Title */
+.form-wrapper h2 {
+  margin-bottom: 25px;
+  font-size: 22px;
+  font-weight: 600;
+  text-align: center;
+  color: #1f2937;
+}
+
+/* Django form paragraphs */
+.form-wrapper form p {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 18px;
+}
+
+/* Labels */
+.form-wrapper label {
+  font-size: 14px;
+  margin-bottom: 6px;
+  color: #374151;
+  font-weight: 500;
+}
+
+/* Inputs */
+.form-wrapper input,
+.form-wrapper select,
+.form-wrapper textarea {
+  padding: 12px 14px;
+  font-size: 14px;
+  border-radius: 10px;
+  border: 1px solid #d1d5db;
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+/* Focus effect */
+.form-wrapper input:focus,
+.form-wrapper select:focus,
+.form-wrapper textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+/* Textarea */
+.form-wrapper textarea {
+  resize: vertical;
+  min-height: 90px;
+}
+
+/* Error messages */
+.form-wrapper .errorlist {
+  margin-top: 5px;
+  color: #dc2626;
+  font-size: 13px;
+  list-style: none;
+  padding-left: 0;
+}
+
+/* Buttons container */
+.form-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 25px;
+}
+
+/* Primary button */
+.btn.primary {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #ffffff;
+  border: none;
+  padding: 12px 22px;
+  font-size: 14px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover effect */
+.btn.primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 25px rgba(37, 99, 235, 0.3);
+}
+
+/* Cancel button */
+.btn.cancel {
+  text-decoration: none;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  color: #374151;
+  background: #e5e7eb;
+  transition: background 0.2s ease;
+}
+
+.btn.cancel:hover {
+  background: #d1d5db;
+}

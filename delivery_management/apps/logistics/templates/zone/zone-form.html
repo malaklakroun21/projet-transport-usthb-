@@ -1,0 +1,20 @@
+{% extends 'main.html' %} {% load static %} {% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/driver-form.css' %}" />
+{% endblock %} {% block content %}
+<section class="add-client-page">
+  <div class="form-wrapper">
+    <h2>
+      {% if form.instance.pk %}Modifier Zone{% else %}Ajouter Zone{% endif %}
+    </h2>
+    <form method="POST">
+      {% csrf_token %} {{ form.as_p }}
+      <div class="form-actions">
+        <button type="submit" class="btn primary">
+          {% if form.instance.pk %}Modifier{% else %}Ajouter{% endif %}
+        </button>
+        <a href="{% url 'zones' %}" class="btn cancel">Annuler</a>
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

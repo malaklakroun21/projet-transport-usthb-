@@ -10,7 +10,7 @@ from .forms import (
     Step4AffectationForm
 )
 from apps.clients.models import Client
-from apps.logistics.models import TypeService, Destination, Tournee, Expedition
+from apps.logistics.models import ServiceType, Destination, Tour, Shipment
 
 
 # Tarifs pour le calcul du montant
@@ -77,7 +77,7 @@ def expedition_wizard(request):
                 # Créer l'expédition
                 tournee = form.cleaned_data.get('tournee')
                 
-                expedition = Expedition.objects.create(
+                expedition = Shipment.objects.create(
                     client_id=expedition_data['client_id'],
                     type_service_id=expedition_data['type_service_id'],
                     destination_id=expedition_data['destination_id'],
@@ -147,7 +147,7 @@ def calculate_price_ajax(request):
 
 def expedition_success(request, pk):
     """Page de confirmation après création"""
-    expedition = Expedition.objects.get(pk=pk)
+    expedition = Shipment.objects.get(pk=pk)
     return render(request, 'expedition/success.html', {'expedition': expedition})
 
 
