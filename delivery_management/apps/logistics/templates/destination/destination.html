@@ -45,21 +45,23 @@
         {% for dest in destinations %}
         <tr>
           <td>{{ forloop.counter }}</td>
-          <td>{{ dest.city }}</td>
-          <td>{{ dest.country }}</td>
-          <td>{{ dest.zone.name }}</td>
-          <td>{{ dest.postal_code }}</td>
+          <td>{{ dest.ville }}</td>
+          <td>{{ dest.pays }}</td>
+          <td>{% if dest.zone %}{{ dest.zone.nom }}{% endif %}</td>
+          <td>{{ dest.code_postal }}</td>
           <td>
-            <a href="{% url 'update-destination' dest.id %}" class="btn small"
-              ><i class="fa fa-edit"></i> Modifier</a
-            >
+            <a href="{% url 'update-destination' dest.id %}" class="btn small">
+              <i class="fa fa-edit"></i> Modifier
+            </a>
             <a
               href="{% url 'delete-destination' dest.id %}"
               class="btn small danger"
-              ><i class="fa fa-trash"></i> Supprimer</a
             >
+              <i class="fa fa-trash"></i> Supprimer
+            </a>
           </td>
         </tr>
+
         {% empty %}
         <tr>
           <td colspan="6" style="text-align: center">

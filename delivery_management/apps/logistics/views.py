@@ -55,7 +55,7 @@ def delete_expedition(request, pk):
 def drivers(request):
     query = request.GET.get('q')
     available = request.GET.get('available')
-    drivers_qs = Driver.objects.all()
+    drivers_qs = Driver.objects.exclude(pk__isnull=True)
 
     if query:
         drivers_qs = drivers_qs.filter(
@@ -76,6 +76,7 @@ def drivers(request):
         'available': available or 'ALL'
     }
     return render(request, 'driver/driver.html', context)
+
 
 
 def create_driver(request):

@@ -43,15 +43,15 @@
         {% for z in zones %}
         <tr>
           <td>{{ forloop.counter }}</td>
-          <td>{{ z.name }}</td>
+          <td>{{ z.nom }}</td>
           <td>{{ z.base_price }}</td>
           <td>
-            <a href="{% url 'update-zone' z.id %}" class="btn small"
-              ><i class="fa fa-edit"></i> Modifier</a
-            >
-            <a href="{% url 'delete-zone' z.id %}" class="btn small danger"
-              ><i class="fa fa-trash"></i> Supprimer</a
-            >
+            <a href="{% url 'update-zone' z.id %}" class="btn small">
+              <i class="fa fa-edit"></i> Modifier
+            </a>
+            <a href="{% url 'delete-zone' z.id %}" class="btn small danger">
+              <i class="fa fa-trash"></i> Supprimer
+            </a>
           </td>
         </tr>
         {% empty %}

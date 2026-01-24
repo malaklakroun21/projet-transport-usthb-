@@ -36,7 +36,7 @@
     <table class="clients-table">
       <thead>
         <tr>
-          <th>#</th>
+          <th>ID</th>
           <th>Plaque</th>
           <th>Type</th>
           <th>Capacité</th>
@@ -50,7 +50,7 @@
           <td>{{ forloop.counter }}</td>
           <td>{{ vehicule.immatriculation }}</td>
           <td>{{ vehicule.type }}</td>
-          <td>-</td>
+          <td>{{ vehicule.capacity }}</td>
           <td>Actif</td>
           <td>
             <a href="{% url 'update-vehicule' vehicule.id %}" class="btn small"
