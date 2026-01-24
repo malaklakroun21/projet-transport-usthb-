@@ -1,0 +1,140 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/driver.css' %}" />
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+    .stat-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .stat-card .value { font-size: 2rem; font-weight: bold; color: #1e293b; }
+    .stat-card .label { color: #64748b; font-size: 0.85rem; margin-top: 4px; }
+    .stat-card.primary .value { color: #2563eb; }
+    .stat-card.success .value { color: #059669; }
+    .stat-card.warning .value { color: #f59e0b; }
+    .stat-card.danger .value { color: #dc2626; }
+    .period-filter { margin-bottom: 24px; }
+    .period-filter a {
+        padding: 8px 16px;
+        border-radius: 8px;
+        margin-right: 8px;
+        text-decoration: none;
+        color: #64748b;
+        background: white;
+    }
+    .period-filter a.active { background: #2563eb; color: white; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="clients-page">
+    <div class="clients-header">
+        <h2>Journal des Tournées</h2>
+    </div>
+
+    <!-- Period Filter -->
+    <div class="period-filter">
+        <a href="?period=week" class="{% if period == 'week' %}active{% endif %}">7 derniers jours</a>
+        <a href="?period=month" class="{% if period == 'month' %}active{% endif %}">30 derniers jours</a>
+        <a href="?period=all" class="{% if period == 'all' %}active{% endif %}">Tout</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+        <div class="stat-card primary">
+            <div class="value">{{ stats.total_tours|default:0 }}</div>
+            <div class="label">Tournées terminées</div>
+        </div>
+        <div class="stat-card success">
+            <div class="value">{{ stats.delivered_count|default:0 }}</div>
+            <div class="label">Expéditions livrées</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">{{ stats.total_km|floatformat:0|default:0 }}</div>
+            <div class="label">Km parcourus</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">{{ stats.avg_km_per_tour|floatformat:1|default:0 }}</div>
+            <div class="label">Km/tournée (moy.)</div>
+        </div>
+        <div class="stat-card">
+            <div class="value">{{ stats.total_fuel|floatformat:1|default:0 }}</div>
+            <div class="label">Litres consommés</div>
+        </div>
+        <div class="stat-card warning">
+            <div class="value">{{ stats.delays_count|default:0 }}</div>
+            <div class="label">Retards signalés</div>
+        </div>
+        <div class="stat-card danger">
+            <div class="value">{{ stats.issues_count|default:0 }}</div>
+            <div class="label">Problèmes techniques</div>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="clients-actions">
+        <a href="{% url 'tour:list' %}" class="btn">
+            <i class="fa fa-arrow-left"></i> Retour aux tournées
+        </a>
+        <a href="{% url 'tour:export' %}" class="btn">
+            <i class="fa fa-file-export"></i> Exporter CSV
+        </a>
+    </div>
+
+    <!-- Table -->
+    <div class="table-container">
+        <table class="clients-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Date</th>
+                    <th>Chauffeur</th>
+                    <th>Véhicule</th>
+                    <th>Expéditions</th>
+                    <th>Km</th>
+                    <th>Carburant</th>
+                    <th>Incidents</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for tour in tours %}
+                <tr>
+                    <td><a href="{% url 'tour:detail' tour.pk %}">{{ tour.id_tour }}</a></td>
+                    <td>{{ tour.tour_date|date:"d/m/Y" }}</td>
+                    <td>{{ tour.id_driver|default:"-" }}</td>
+                    <td>{{ tour.id_vehicle.immatriculation|default:"-" }}</td>
+                    <td>{{ tour.expedition_count }}</td>
+                    <td>{{ tour.kilometers|floatformat:1|default:0 }}</td>
+                    <td>{{ tour.fuel_consumption|floatformat:1|default:0 }} L</td>
+                    <td>
+                        {% if tour.has_delay %}
+                        <span style="color: #f59e0b;"><i class="fa fa-clock"></i> {{ tour.delay_minutes }}min</span>
+                        {% endif %}
+                        {% if tour.has_technical_issue %}
+                        <span style="color: #dc2626;"><i class="fa fa-exclamation-triangle"></i></span>
+                        {% endif %}
+                        {% if not tour.has_delay and not tour.has_technical_issue %}
+                        <span style="color: #059669;">✓</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" style="text-align: center;">Aucune tournée terminée sur cette période</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,242 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suivi de Colis - TransportPro</title>
+    <link rel="stylesheet" href="{% static 'incidents/css/incidents.css' %}">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
+                </svg>
+                <div><h1>TransportPro</h1><span>Gestion logistique</span></div>
+            </div>
+            <nav class="nav-menu">
+                <a href="{% url 'home' %}" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Tableau de bord</a>
+                <a href="{% url 'expedition_list' %}" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>Gestion des expéditions</a>
+                <a href="{% url 'track_expedition' %}" class="nav-item active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>Suivi colis</a>
+                <a href="{% url 'tour:list' %}" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>Gestion des tournées</a>
+                <a href="{% url 'drivers' %}" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Gestion des tables</a>
+            </nav>
+            <div class="user-info">
+                <div class="avatar">{{ request.user.username|slice:":2"|upper }}</div>
+                <div><strong>{{ request.user.username }}</strong><span>{{ request.user.role|default:"Admin" }}</span></div>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <header class="header">
+                <span class="date">{{ "now"|date:"l d F Y" }}</span>
+                <a href="{% url 'logout' %}" class="btn-logout">Déconnexion</a>
+            </header>
+            
+            <div class="content">
+                <div class="page-header">
+                    <div><h1>Suivi de Colis</h1><p>Recherchez et suivez vos expéditions en temps réel</p></div>
+                </div>
+                
+                <!-- Search Box -->
+                <div class="search-box">
+                    <form method="get" class="search-form">
+                        <div class="search-input-wrapper">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                            <input type="text" name="tracking" value="{{ tracking_number }}" placeholder="Entrez le numéro de suivi (ex: EXP-XXXXXXXX)" class="search-input" autofocus>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-large">Rechercher</button>
+                    </form>
+                </div>
+                
+                {% if error %}
+                <div class="alert alert-error">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    {{ error }}
+                </div>
+                {% endif %}
+                
+                {% if expedition %}
+                <div class="tracking-result">
+                    <!-- Status Header -->
+                    <div class="status-header status-{{ expedition.status|lower }}">
+                        <div class="status-info">
+                            <span class="tracking-number">{{ expedition.tracking_number }}</span>
+                            <h2>{{ expedition.get_status_display }}</h2>
+                        </div>
+                        <div class="status-actions">
+                            <a href="{% url 'expedition_detail' expedition.pk %}" class="btn btn-white">Voir détails</a>
+                            <a href="{% url 'expedition_pdf' expedition.pk %}" class="btn btn-white-outline">Imprimer</a>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="progress-section">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: {{ progress }}%"></div>
+                        </div>
+                        <div class="progress-steps">
+                            <div class="step {% if progress >= 0 %}active{% endif %} {% if progress > 0 %}completed{% endif %}">
+                                <div class="step-dot"></div>
+                                <span>Enregistré</span>
+                            </div>
+                            <div class="step {% if progress >= 25 %}active{% endif %} {% if progress > 25 %}completed{% endif %}">
+                                <div class="step-dot"></div>
+                                <span>En transit</span>
+                            </div>
+                            <div class="step {% if progress >= 50 %}active{% endif %} {% if progress > 50 %}completed{% endif %}">
+                                <div class="step-dot"></div>
+                                <span>Centre de tri</span>
+                            </div>
+                            <div class="step {% if progress >= 75 %}active{% endif %} {% if progress > 75 %}completed{% endif %}">
+                                <div class="step-dot"></div>
+                                <span>En livraison</span>
+                            </div>
+                            <div class="step {% if progress >= 100 %}active completed{% endif %} {% if expedition.status == 'FAILED' %}failed{% endif %}">
+                                <div class="step-dot"></div>
+                                <span>{% if expedition.status == 'FAILED' %}Échec{% else %}Livré{% endif %}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="tracking-grid">
+                        <!-- Expedition Info -->
+                        <div class="info-card">
+                            <h3>Informations de l'expédition</h3>
+                            <ul class="info-list">
+                                <li><span>N° de suivi</span><strong>{{ expedition.tracking_number }}</strong></li>
+                                <li><span>Client</span><span>{{ expedition.id_client|default:"-" }}</span></li>
+                                <li><span>Destination</span><span>{{ expedition.id_destination|default:"-" }}</span></li>
+                                <li><span>Type de service</span><span>{{ expedition.id_service_type|default:"-" }}</span></li>
+                                <li><span>Poids</span><span>{{ expedition.weight|floatformat:2|default:"-" }} kg</span></li>
+                                <li><span>Volume</span><span>{{ expedition.volume|floatformat:2|default:"-" }} m³</span></li>
+                                <li><span>Date de création</span><span>{{ expedition.created_at|date:"d/m/Y à H:i" }}</span></li>
+                                <li><span>Livraison estimée</span><span>{{ expedition.estimated_delivery_date|date:"d/m/Y"|default:"-" }}</span></li>
+                                {% if expedition.reel_delivery_date %}
+                                <li><span>Livraison effective</span><strong class="text-success">{{ expedition.reel_delivery_date|date:"d/m/Y" }}</strong></li>
+                                {% endif %}
+                            </ul>
+                        </div>
+                        
+                        <!-- Timeline -->
+                        <div class="timeline-card">
+                            <h3>Historique des mouvements</h3>
+                            <div class="timeline">
+                                {% for entry in status_history %}
+                                <div class="timeline-item {% if forloop.first %}current{% endif %}">
+                                    <div class="timeline-dot"></div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-header">
+                                            <span class="timeline-status">{{ entry.get_status_display }}</span>
+                                            <span class="timeline-date">{{ entry.changed_at|date:"d/m/Y H:i" }}</span>
+                                        </div>
+                                        {% if entry.location %}<div class="timeline-location">{{ entry.location }}</div>{% endif %}
+                                        {% if entry.notes %}<div class="timeline-notes">{{ entry.notes }}</div>{% endif %}
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div class="timeline-empty">Aucun historique disponible</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% elif not tracking_number %}
+                <div class="empty-search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                    </svg>
+                    <h3>Suivez votre colis</h3>
+                    <p>Entrez le numéro de suivi de votre expédition pour voir son statut en temps réel.</p>
+                </div>
+                {% endif %}
+            </div>
+        </main>
+    </div>
+    
+    <style>
+        .search-box { background: white; padding: 24px; border-radius: 12px; margin-bottom: 24px; border: 1px solid #e5e7eb; }
+        .search-form { display: flex; gap: 12px; }
+        .search-input-wrapper { flex: 1; position: relative; }
+        .search-input-wrapper svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #9ca3af; }
+        .search-input { width: 100%; padding: 16px 16px 16px 48px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 16px; transition: border-color 0.2s; }
+        .search-input:focus { outline: none; border-color: #2563eb; }
+        .btn { padding: 10px 20px; border-radius: 6px; font-weight: 500; text-decoration: none; border: none; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-large { padding: 16px 32px; font-size: 16px; }
+        .btn-white { background: white; color: #374151; }
+        .btn-white:hover { background: #f9fafb; }
+        .btn-white-outline { background: transparent; color: white; border: 2px solid white; }
+        .btn-white-outline:hover { background: rgba(255,255,255,0.1); }
+        
+        .alert { padding: 16px; border-radius: 8px; display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .alert-error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+        .alert svg { width: 20px; height: 20px; flex-shrink: 0; }
+        
+        .tracking-result { background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e5e7eb; }
+        .status-header { padding: 24px; display: flex; justify-content: space-between; align-items: center; color: white; }
+        .status-header.status-registered { background: linear-gradient(135deg, #6b7280, #4b5563); }
+        .status-header.status-transit { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .status-header.status-sorting { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .status-header.status-out_for_delivery { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .status-header.status-delivered { background: linear-gradient(135deg, #10b981, #059669); }
+        .status-header.status-failed { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .status-info .tracking-number { font-size: 13px; opacity: 0.9; }
+        .status-info h2 { margin: 4px 0 0; font-size: 24px; }
+        .status-actions { display: flex; gap: 10px; }
+        
+        .progress-section { padding: 32px 24px; border-bottom: 1px solid #e5e7eb; }
+        .progress-bar { height: 6px; background: #e5e7eb; border-radius: 3px; margin-bottom: 16px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #10b981, #059669); border-radius: 3px; transition: width 0.5s ease; }
+        .progress-steps { display: flex; justify-content: space-between; }
+        .step { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; }
+        .step-dot { width: 16px; height: 16px; border-radius: 50%; background: #e5e7eb; border: 3px solid white; box-shadow: 0 0 0 2px #e5e7eb; transition: all 0.3s; }
+        .step.active .step-dot { background: #10b981; box-shadow: 0 0 0 2px #10b981; }
+        .step.completed .step-dot { background: #10b981; }
+        .step.failed .step-dot { background: #ef4444; box-shadow: 0 0 0 2px #ef4444; }
+        .step span { font-size: 12px; color: #9ca3af; text-align: center; }
+        .step.active span { color: #374151; font-weight: 500; }
+        
+        .tracking-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0; }
+        .info-card, .timeline-card { padding: 24px; }
+        .info-card { border-right: 1px solid #e5e7eb; }
+        .info-card h3, .timeline-card h3 { margin: 0 0 16px; font-size: 16px; color: #374151; }
+        .info-list { list-style: none; padding: 0; margin: 0; }
+        .info-list li { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #f3f4f6; font-size: 14px; }
+        .info-list li:last-child { border-bottom: none; }
+        .info-list li span:first-child { color: #6b7280; }
+        .text-success { color: #059669; }
+        
+        .timeline { position: relative; padding-left: 24px; }
+        .timeline::before { content: ''; position: absolute; left: 7px; top: 0; bottom: 0; width: 2px; background: #e5e7eb; }
+        .timeline-item { position: relative; padding-bottom: 20px; }
+        .timeline-item:last-child { padding-bottom: 0; }
+        .timeline-dot { position: absolute; left: -24px; top: 0; width: 16px; height: 16px; border-radius: 50%; background: #e5e7eb; border: 3px solid white; box-shadow: 0 0 0 2px #e5e7eb; }
+        .timeline-item.current .timeline-dot { background: #2563eb; box-shadow: 0 0 0 2px #2563eb; }
+        .timeline-content { padding-left: 8px; }
+        .timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .timeline-status { font-weight: 600; color: #374151; }
+        .timeline-date { font-size: 12px; color: #9ca3af; }
+        .timeline-location { font-size: 13px; color: #6b7280; margin-bottom: 4px; }
+        .timeline-notes { font-size: 13px; color: #9ca3af; font-style: italic; }
+        .timeline-empty { color: #9ca3af; font-size: 14px; text-align: center; padding: 20px; }
+        
+        .empty-search { text-align: center; padding: 60px 20px; }
+        .empty-search svg { width: 80px; height: 80px; color: #d1d5db; margin-bottom: 20px; }
+        .empty-search h3 { margin: 0 0 8px; color: #374151; }
+        .empty-search p { color: #9ca3af; margin: 0; }
+        
+        @media (max-width: 768px) {
+            .search-form { flex-direction: column; }
+            .tracking-grid { grid-template-columns: 1fr; }
+            .info-card { border-right: none; border-bottom: 1px solid #e5e7eb; }
+            .status-header { flex-direction: column; gap: 16px; text-align: center; }
+            .progress-steps { flex-wrap: wrap; gap: 8px; }
+            .step { flex: none; width: calc(20% - 8px); }
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,262 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Expéditions - TransportPro</title>
+    <link rel="stylesheet" href="{% static 'incidents/css/incidents.css' %}">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
+                </svg>
+                <div><h1>TransportPro</h1><span>Gestion logistique</span></div>
+            </div>
+            <nav class="nav-menu">
+                <a href="{% url 'home' %}" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Tableau de bord</a>
+                <a href="{% url 'expedition_list' %}" class="nav-item active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>Gestion des expéditions</a>
+                <a href="{% url 'track_expedition' %}" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>Suivi colis</a>
+                <a href="{% url 'tour:list' %}" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>Gestion des tournées</a>
+                <a href="{% url 'drivers' %}" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Gestion des tables</a>
+                <a href="{% url 'incident_list' %}" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>Incidents</a>
+            </nav>
+            <div class="user-info">
+                <div class="avatar">{{ request.user.username|slice:":2"|upper }}</div>
+                <div><strong>{{ request.user.username }}</strong><span>{{ request.user.role|default:"Admin" }}</span></div>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <header class="header">
+                <span class="date">{{ "now"|date:"l d F Y" }}</span>
+                <a href="{% url 'logout' %}" class="btn-logout">Déconnexion</a>
+            </header>
+            
+            <div class="content">
+                <div class="page-header">
+                    <div><h1>Gestion des Expéditions</h1><p>Suivi et gestion de toutes les expéditions</p></div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card" data-status="all"><div class="stat-number">{{ stats.total }}</div><div class="stat-label">Total</div></div>
+                    <div class="stat-card stat-registered" data-status="REGISTERED"><div class="stat-number">{{ stats.registered }}</div><div class="stat-label">Enregistrées</div></div>
+                    <div class="stat-card stat-transit" data-status="TRANSIT"><div class="stat-number">{{ stats.transit }}</div><div class="stat-label">En transit</div></div>
+                    <div class="stat-card stat-sorting" data-status="SORTING"><div class="stat-number">{{ stats.sorting }}</div><div class="stat-label">Centre de tri</div></div>
+                    <div class="stat-card stat-delivery" data-status="OUT_FOR_DELIVERY"><div class="stat-number">{{ stats.out_for_delivery }}</div><div class="stat-label">En livraison</div></div>
+                    <div class="stat-card stat-delivered" data-status="DELIVERED"><div class="stat-number">{{ stats.delivered }}</div><div class="stat-label">Livrées</div></div>
+                    <div class="stat-card stat-failed" data-status="FAILED"><div class="stat-number">{{ stats.failed }}</div><div class="stat-label">Échecs</div></div>
+                </div>
+                
+                <div class="filters-panel">
+                    <form method="get" class="filters-form" id="filtersForm">
+                        <div class="filter-row">
+                            <div class="filter-group search-group">
+                                <label>Recherche</label>
+                                <input type="text" name="search" value="{{ filters.search }}" placeholder="N° suivi, client, destination..." class="filter-input">
+                            </div>
+                            <div class="filter-group">
+                                <label>Statut</label>
+                                <select name="status" class="filter-input" id="statusFilter">
+                                    <option value="">Tous les statuts</option>
+                                    {% for value, label in status_choices %}<option value="{{ value }}" {% if filters.status == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Client</label>
+                                <select name="client" class="filter-input">
+                                    <option value="">Tous les clients</option>
+                                    {% for client in clients %}<option value="{{ client.id }}" {% if filters.client == client.id|stringformat:"s" %}selected{% endif %}>{{ client }}</option>{% endfor %}
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>Destination</label>
+                                <input type="text" name="destination" value="{{ filters.destination }}" placeholder="Ville..." class="filter-input" list="destinations-list">
+                                <datalist id="destinations-list">{% for dest in destinations %}<option value="{{ dest }}">{% endfor %}</datalist>
+                            </div>
+                        </div>
+                        <div class="filter-row">
+                            <div class="filter-group"><label>Date du</label><input type="date" name="date_from" value="{{ filters.date_from }}" class="filter-input"></div>
+                            <div class="filter-group"><label>Date au</label><input type="date" name="date_to" value="{{ filters.date_to }}" class="filter-input"></div>
+                            <div class="filter-actions">
+                                <button type="submit" class="btn btn-primary">Filtrer</button>
+                                <a href="{% url 'expedition_list' %}" class="btn btn-secondary">Réinitialiser</a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                
+                <div class="table-section">
+                    <div class="section-header">
+                        <h2>Liste des expéditions <span class="count-badge">{{ expeditions|length }}</span></h2>
+                        <div class="section-actions">
+                            <a href="{% url 'export_expeditions_csv' %}" class="btn btn-secondary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Exporter CSV</a>
+                            <a href="{% url 'create_expedition' %}" class="btn btn-primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;"><path d="M12 4v16m8-8H4"/></svg>Nouvelle Expédition</a>
+                        </div>
+                    </div>
+                    
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>N° Suivi</th><th>Client</th><th>Destination</th><th>Type</th><th>Poids</th><th>Statut</th><th>Date création</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody>
+                            {% for exp in expeditions %}
+                            <tr data-id="{{ exp.pk }}" data-status="{{ exp.status }}">
+                                <td><strong class="tracking-link" data-tracking="{{ exp.tracking_number }}">{{ exp.tracking_number }}</strong></td>
+                                <td>{{ exp.id_client|default:"-" }}</td>
+                                <td>{{ exp.id_destination|default:"-" }}</td>
+                                <td>{{ exp.id_service_type|default:"-" }}</td>
+                                <td>{{ exp.weight|floatformat:1|default:"-" }} kg</td>
+                                <td><span class="status-badge status-{{ exp.status|lower }}">{{ exp.get_status_display }}</span></td>
+                                <td>{{ exp.created_at|date:"d/m/Y H:i" }}</td>
+                                <td class="actions-cell">
+                                    <a href="{% url 'expedition_detail' exp.pk %}" class="btn-icon" title="Détails"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg></a>
+                                    <a href="{% url 'expedition_pdf' exp.pk %}" class="btn-icon" title="PDF"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg></a>
+                                    <a href="{% url 'update_expedition' exp.pk %}" class="btn-icon" title="Modifier"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg></a>
+                                    <button class="btn-icon btn-status" data-id="{{ exp.pk }}" title="Changer statut"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg></button>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="8" class="empty-state">Aucune expédition trouvée</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div class="modal" id="statusModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Mettre à jour le statut</h3><button class="modal-close">&times;</button></div>
+            <div class="modal-body">
+                <div class="form-group"><label>Nouveau statut</label><select id="newStatus" class="filter-input">{% for value, label in status_choices %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select></div>
+                <div class="form-group"><label>Localisation (optionnel)</label><input type="text" id="statusLocation" class="filter-input" placeholder="Ex: Centre de tri Paris"></div>
+                <div class="form-group"><label>Notes (optionnel)</label><textarea id="statusNotes" class="filter-input" rows="2" placeholder="Commentaires..."></textarea></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-secondary modal-close-btn">Annuler</button><button class="btn btn-primary" id="confirmStatusUpdate">Confirmer</button></div>
+        </div>
+    </div>
+    
+    <style>
+        .stats-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 12px; margin-bottom: 20px; }
+        .stat-card { background: white; padding: 16px; border-radius: 8px; text-align: center; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; }
+        .stat-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .stat-number { font-size: 28px; font-weight: 700; color: #111827; }
+        .stat-label { font-size: 12px; color: #6b7280; margin-top: 4px; }
+        .stat-registered { border-left: 4px solid #6b7280; }
+        .stat-transit { border-left: 4px solid #3b82f6; }
+        .stat-sorting { border-left: 4px solid #f59e0b; }
+        .stat-delivery { border-left: 4px solid #8b5cf6; }
+        .stat-delivered { border-left: 4px solid #10b981; }
+        .stat-failed { border-left: 4px solid #ef4444; }
+        .filters-panel { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e5e7eb; }
+        .filters-form { display: flex; flex-direction: column; gap: 16px; }
+        .filter-row { display: flex; gap: 16px; flex-wrap: wrap; align-items: flex-end; }
+        .filter-group { display: flex; flex-direction: column; gap: 6px; min-width: 150px; }
+        .filter-group.search-group { flex: 2; min-width: 250px; }
+        .filter-group label { font-size: 12px; font-weight: 500; color: #374151; }
+        .filter-input { padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
+        .filter-input:focus { outline: none; border-color: #2563eb; }
+        .filter-actions { display: flex; gap: 10px; }
+        .btn { padding: 10px 16px; border-radius: 6px; font-weight: 500; text-decoration: none; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-size: 14px; transition: all 0.2s; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-secondary { background: #f1f5f9; color: #475569; }
+        .btn-secondary:hover { background: #e2e8f0; }
+        .table-section { background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden; }
+        .section-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e5e7eb; }
+        .section-header h2 { margin: 0; font-size: 16px; display: flex; align-items: center; gap: 10px; }
+        .count-badge { background: #e5e7eb; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+        .section-actions { display: flex; gap: 10px; }
+        .data-table { width: 100%; border-collapse: collapse; }
+        .data-table th, .data-table td { padding: 12px 16px; text-align: left; border-bottom: 1px solid #f3f4f6; }
+        .data-table th { background: #f9fafb; font-size: 12px; font-weight: 600; color: #6b7280; text-transform: uppercase; }
+        .data-table tbody tr:hover { background: #f9fafb; }
+        .tracking-link { color: #2563eb; cursor: pointer; }
+        .tracking-link:hover { text-decoration: underline; }
+        .status-badge { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+        .status-registered { background: #f3f4f6; color: #374151; }
+        .status-transit { background: #dbeafe; color: #1d4ed8; }
+        .status-sorting { background: #fef3c7; color: #d97706; }
+        .status-out_for_delivery { background: #ede9fe; color: #7c3aed; }
+        .status-delivered { background: #d1fae5; color: #059669; }
+        .status-failed { background: #fee2e2; color: #dc2626; }
+        .actions-cell { display: flex; gap: 6px; }
+        .btn-icon { width: 32px; height: 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: #f3f4f6; color: #6b7280; border: none; cursor: pointer; transition: all 0.2s; }
+        .btn-icon:hover { background: #e5e7eb; color: #374151; }
+        .btn-icon svg { width: 16px; height: 16px; }
+        .btn-status { background: #dbeafe; color: #2563eb; }
+        .btn-status:hover { background: #bfdbfe; }
+        .empty-state { text-align: center; color: #9ca3af; padding: 40px !important; }
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 420px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e5e7eb; }
+        .modal-header h3 { margin: 0; font-size: 16px; }
+        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #9ca3af; }
+        .modal-body { padding: 20px; }
+        .modal-body .form-group { margin-bottom: 16px; }
+        .modal-body label { display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px; }
+        .modal-body .filter-input { width: 100%; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 20px; border-top: 1px solid #e5e7eb; background: #f9fafb; }
+        @media (max-width: 1200px) { .stats-grid { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 768px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } .filter-row { flex-direction: column; } .filter-group { width: 100%; } }
+    </style>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('statusModal');
+            const statusButtons = document.querySelectorAll('.btn-status');
+            const closeButtons = document.querySelectorAll('.modal-close, .modal-close-btn');
+            const confirmBtn = document.getElementById('confirmStatusUpdate');
+            const statCards = document.querySelectorAll('.stat-card[data-status]');
+            let currentExpeditionId = null;
+            
+            statCards.forEach(card => {
+                card.addEventListener('click', function() {
+                    const status = this.dataset.status;
+                    document.getElementById('statusFilter').value = status === 'all' ? '' : status;
+                    document.getElementById('filtersForm').submit();
+                });
+            });
+            
+            statusButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    currentExpeditionId = this.dataset.id;
+                    modal.classList.add('active');
+                });
+            });
+            
+            closeButtons.forEach(btn => btn.addEventListener('click', () => modal.classList.remove('active')));
+            modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
+            
+            confirmBtn.addEventListener('click', async function() {
+                const newStatus = document.getElementById('newStatus').value;
+                const loc = document.getElementById('statusLocation').value;
+                const notes = document.getElementById('statusNotes').value;
+                
+                try {
+                    const response = await fetch(`/logistics/expeditions/${currentExpeditionId}/status/`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                        body: JSON.stringify({ status: newStatus, location: loc, notes })
+                    });
+                    const data = await response.json();
+                    if (data.success) window.location.reload();
+                    else alert(data.error || 'Erreur');
+                } catch (e) { alert('Erreur de connexion'); }
+            });
+            
+            document.querySelectorAll('.tracking-link').forEach(link => {
+                link.addEventListener('click', function() {
+                    window.location.href = `{% url 'track_expedition' %}?tracking=${this.dataset.tracking}`;
+                });
+            });
+        });
+    </script>
+</body>
+</html>

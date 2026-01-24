@@ -1,9 +1,13 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.db.models import Q
-from django.http import HttpResponse
+from django.db.models import Q, Count
+from django.http import HttpResponse, JsonResponse
+from django.views.decorators.http import require_POST
+from django.template.loader import get_template
+from django.utils import timezone
 import csv
+import json
 
-from .models import Shipment, Driver, Vehicule, Destination, TypeService, Zone
+from .models import Shipment, ShipmentStatusHistory, Driver, Vehicule, Destination, TypeService, Zone
 from .forms import ExpeditionForm, DriverForm, VehiculeForm, DestinationForm, TypeServiceForm, ZoneForm
 
 
@@ -11,19 +15,95 @@ from .forms import ExpeditionForm, DriverForm, VehiculeForm, DestinationForm, Ty
 
 def expedition_list(request):
     expeditions = Shipment.objects.all().order_by("-id")
-    return render(request, "logistics/expedition_list.html", {"expeditions": expeditions})
+    
+    # Advanced filters
+    search = request.GET.get('search', '').strip()
+    status_filter = request.GET.get('status', '')
+    client_filter = request.GET.get('client', '')
+    date_from = request.GET.get('date_from', '')
+    date_to = request.GET.get('date_to', '')
+    destination_filter = request.GET.get('destination', '')
+    
+    if search:
+        expeditions = expeditions.filter(
+            Q(tracking_number__icontains=search) |
+            Q(id_client__name__icontains=search) |
+            Q(id_destination__ville__icontains=search) |
+            Q(description__icontains=search)
+        )
+    
+    if status_filter:
+        expeditions = expeditions.filter(status=status_filter)
+    
+    if client_filter:
+        expeditions = expeditions.filter(id_client_id=client_filter)
+    
+    if date_from:
+        expeditions = expeditions.filter(created_at__date__gte=date_from)
+    
+    if date_to:
+        expeditions = expeditions.filter(created_at__date__lte=date_to)
+    
+    if destination_filter:
+        expeditions = expeditions.filter(id_destination__ville__icontains=destination_filter)
+    
+    # Stats for dashboard
+    stats = {
+        'total': Shipment.objects.count(),
+        'registered': Shipment.objects.filter(status='REGISTERED').count(),
+        'transit': Shipment.objects.filter(status='TRANSIT').count(),
+        'sorting': Shipment.objects.filter(status='SORTING').count(),
+        'out_for_delivery': Shipment.objects.filter(status='OUT_FOR_DELIVERY').count(),
+        'delivered': Shipment.objects.filter(status='DELIVERED').count(),
+        'failed': Shipment.objects.filter(status='FAILED').count(),
+    }
+    
+    # Get unique clients and destinations for filter dropdowns
+    from apps.clients.models import Client
+    clients = Client.objects.all()
+    destinations = Destination.objects.values_list('ville', flat=True).distinct()
+    
+    context = {
+        "expeditions": expeditions,
+        "stats": stats,
+        "clients": clients,
+        "destinations": destinations,
+        "status_choices": Shipment.STATUS_CHOICES,
+        "filters": {
+            "search": search,
+            "status": status_filter,
+            "client": client_filter,
+            "date_from": date_from,
+            "date_to": date_to,
+            "destination": destination_filter,
+        }
+    }
+    return render(request, "logistics/expedition_list.html", context)
 
 
 def expedition_detail(request, pk):
     expedition = get_object_or_404(Shipment, pk=pk)
-    return render(request, "logistics/expedition_detail.html", {"expedition": expedition})
+    status_history = expedition.status_history.all().order_by('changed_at')
+    next_statuses = expedition.get_next_statuses()
+    
+    context = {
+        "expedition": expedition,
+        "status_history": status_history,
+        "next_statuses": next_statuses,
+        "status_choices": dict(Shipment.STATUS_CHOICES),
+        "progress": expedition.get_status_progress(),
+    }
+    return render(request, "logistics/expedition_detail.html", context)
 
 
 def create_expedition(request):
     if request.method == "POST":
         form = ExpeditionForm(request.POST)
         if form.is_valid():
-            expedition = form.save()
+            expedition = form.save(commit=False)
+            if request.user.is_authenticated:
+                expedition.created_by = request.user
+            expedition.save()
             return redirect("expedition_detail", pk=expedition.pk)
     else:
         form = ExpeditionForm()
@@ -40,6 +120,197 @@ def update_expedition(request, pk):
     else:
         form = ExpeditionForm(instance=expedition)
     return render(request, "logistics/update_expedition.html", {"form": form, "expedition": expedition})
+
+
+def delete_expedition(request, pk):
+    expedition = get_object_or_404(Shipment, pk=pk)
+    if request.method == "POST":
+        expedition.delete()
+        return redirect("expedition_list")
+    return render(request, "logistics/delete_expedition.html", {"expedition": expedition})
+
+
+@require_POST
+def update_expedition_status(request, pk):
+    """AJAX endpoint for status updates"""
+    expedition = get_object_or_404(Shipment, pk=pk)
+    
+    try:
+        data = json.loads(request.body)
+        new_status = data.get('status')
+        notes = data.get('notes', '')
+        location = data.get('location', '')
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'Invalid JSON'}, status=400)
+    
+    if not new_status:
+        return JsonResponse({'success': False, 'error': 'Status required'}, status=400)
+    
+    if not expedition.can_transition_to(new_status):
+        return JsonResponse({
+            'success': False, 
+            'error': f'Transition de {expedition.status} vers {new_status} non autorisée'
+        }, status=400)
+    
+    # Update status
+    expedition.status = new_status
+    expedition.save()
+    
+    # Update history entry with additional info
+    history = ShipmentStatusHistory.objects.filter(
+        shipment=expedition, 
+        status=new_status
+    ).order_by('-changed_at').first()
+    
+    if history:
+        if notes:
+            history.notes = notes
+        if location:
+            history.location = location
+        if request.user.is_authenticated:
+            history.changed_by = request.user
+        history.save()
+    
+    return JsonResponse({
+        'success': True,
+        'new_status': new_status,
+        'status_display': dict(Shipment.STATUS_CHOICES).get(new_status),
+        'progress': expedition.get_status_progress(),
+        'next_statuses': expedition.get_next_statuses(),
+    })
+
+
+def track_expedition(request):
+    """Public tracking page"""
+    tracking_number = request.GET.get('tracking', '').strip().upper()
+    expedition = None
+    status_history = None
+    error = None
+    
+    if tracking_number:
+        try:
+            expedition = Shipment.objects.get(tracking_number__iexact=tracking_number)
+            status_history = expedition.status_history.all().order_by('changed_at')
+        except Shipment.DoesNotExist:
+            error = "Aucune expédition trouvée avec ce numéro de suivi."
+    
+    context = {
+        "tracking_number": tracking_number,
+        "expedition": expedition,
+        "status_history": status_history,
+        "error": error,
+        "progress": expedition.get_status_progress() if expedition else 0,
+        "status_choices": dict(Shipment.STATUS_CHOICES) if expedition else {},
+    }
+    return render(request, "logistics/track_expedition.html", context)
+
+
+def expedition_pdf(request, pk):
+    """Generate PDF shipping slip"""
+    expedition = get_object_or_404(Shipment, pk=pk)
+    
+    # Try to use weasyprint for PDF generation
+    try:
+        from weasyprint import HTML
+        
+        template = get_template('logistics/expedition_pdf.html')
+        html_string = template.render({
+            'expedition': expedition,
+            'generated_at': timezone.now(),
+        })
+        
+        html = HTML(string=html_string, base_url=request.build_absolute_uri('/'))
+        pdf = html.write_pdf()
+        
+        response = HttpResponse(pdf, content_type='application/pdf')
+        response['Content-Disposition'] = f'inline; filename="bon_expedition_{expedition.tracking_number}.pdf"'
+        return response
+    except ImportError:
+        # Fallback: return HTML for printing
+        return render(request, 'logistics/expedition_pdf.html', {
+            'expedition': expedition,
+            'generated_at': timezone.now(),
+            'print_mode': True,
+        })
+
+
+def calculate_price_api(request):
+    """API endpoint for real-time price calculation"""
+    service_type_id = request.GET.get('service_type')
+    destination_id = request.GET.get('destination')
+    weight = request.GET.get('weight', 0)
+    volume = request.GET.get('volume', 0)
+    
+    try:
+        weight = float(weight) if weight else 0
+        volume = float(volume) if volume else 0
+    except ValueError:
+        return JsonResponse({'price': 0, 'error': 'Invalid weight or volume'})
+    
+    base_price = 0
+    weight_rate = 0
+    volume_rate = 0
+    
+    if destination_id:
+        try:
+            destination = Destination.objects.get(pk=destination_id)
+            if destination.zone:
+                base_price = float(destination.zone.base_price or 0)
+        except Destination.DoesNotExist:
+            pass
+    
+    if service_type_id:
+        try:
+            service = TypeService.objects.get(pk=service_type_id)
+            weight_rate = float(service.weight_rate or 0)
+            volume_rate = float(service.volume_rate or 0)
+        except TypeService.DoesNotExist:
+            pass
+    
+    total = base_price + (weight * weight_rate) + (volume * volume_rate)
+    
+    return JsonResponse({
+        'price': round(total, 2),
+        'base_price': base_price,
+        'weight_cost': round(weight * weight_rate, 2),
+        'volume_cost': round(volume * volume_rate, 2),
+    })
+
+
+def export_expeditions_csv(request):
+    """Export expeditions to CSV"""
+    response = HttpResponse(
+        content_type='text/csv',
+        headers={'Content-Disposition': 'attachment; filename="expeditions.csv"'},
+    )
+    response.write('\ufeff')  # BOM for Excel UTF-8
+    writer = csv.writer(response)
+    writer.writerow([
+        'N° Suivi', 'Client', 'Destination', 'Type Service', 
+        'Poids (kg)', 'Volume (m³)', 'Statut', 'Prix Total',
+        'Date Création', 'Livraison Estimée', 'Livraison Réelle'
+    ])
+    
+    expeditions = Shipment.objects.select_related(
+        'id_client', 'id_destination', 'id_service_type'
+    ).all()
+    
+    for exp in expeditions:
+        writer.writerow([
+            exp.tracking_number,
+            str(exp.id_client) if exp.id_client else '-',
+            str(exp.id_destination) if exp.id_destination else '-',
+            str(exp.id_service_type) if exp.id_service_type else '-',
+            exp.weight or '-',
+            exp.volume or '-',
+            exp.get_status_display(),
+            exp.total_price,
+            exp.created_at.strftime('%d/%m/%Y %H:%M'),
+            exp.estimated_delivery_date.strftime('%d/%m/%Y') if exp.estimated_delivery_date else '-',
+            exp.reel_delivery_date.strftime('%d/%m/%Y') if exp.reel_delivery_date else '-',
+        ])
+    
+    return response
 
 
 def delete_expedition(request, pk):

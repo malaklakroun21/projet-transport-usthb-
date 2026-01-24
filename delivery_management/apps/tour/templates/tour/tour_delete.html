@@ -1,0 +1,41 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/driver.css' %}" />
+{% endblock %}
+
+{% block content %}
+<section class="clients-page">
+    <div class="delete-confirmation" style="max-width: 500px; margin: 40px auto; background: white; border-radius: 12px; padding: 32px; text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+        <div style="width: 60px; height: 60px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
+            <i class="fa fa-trash" style="font-size: 24px; color: #dc2626;"></i>
+        </div>
+        
+        <h2 style="color: #1e293b; margin-bottom: 12px;">Supprimer la tournée ?</h2>
+        
+        <p style="color: #64748b; margin-bottom: 24px;">
+            Êtes-vous sûr de vouloir supprimer la <strong>Tournée #{{ tour.id_tour }}</strong> 
+            du {{ tour.tour_date|date:"d/m/Y"|default:"Non datée" }} ?
+            <br><br>
+            {% if tour.expedition_count > 0 %}
+            <span style="color: #f59e0b;">
+                <i class="fa fa-warning"></i>
+                Cette tournée contient {{ tour.expedition_count }} expédition(s). 
+                Elles seront remises en attente mais non supprimées.
+            </span>
+            {% endif %}
+        </p>
+        
+        <div style="display: flex; gap: 12px; justify-content: center;">
+            <a href="{% url 'tour:list' %}" class="btn">Annuler</a>
+            <form method="POST" style="display: inline;">
+                {% csrf_token %}
+                <button type="submit" class="btn danger">
+                    <i class="fa fa-trash"></i> Supprimer
+                </button>
+            </form>
+        </div>
+    </div>
+</section>
+{% endblock %}
