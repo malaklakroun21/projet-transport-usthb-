@@ -1,157 +1,245 @@
-from django.shortcuts import render, redirect
-from django.contrib import messages
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
-import uuid
+from django.contrib.auth.decorators import login_required
+from django import forms
+from decimal import Decimal
 
-from .forms import (
-    Step1ClientForm,
-    Step2ServiceDestinationForm,
-    Step3ColisDetailsForm,
-    Step4AffectationForm
-)
+from apps.logistics.models import Shipment, TypeService, Destination, Tour
 from apps.clients.models import Client
-from apps.logistics.models import ServiceType, Destination, Tour, Shipment
 
 
-# Tarifs pour le calcul du montant
-PRIX_PAR_KG = 5.0  # Prix par kg
-PRIX_PAR_M3 = 20.0  # Prix par m³
-FRAIS_BASE = 10.0  # Frais de base
+# Définition des formulaires pour chaque étape
+class Step1Form(forms.Form):
+    """Étape 1: Sélection client et type de service"""
+    client = forms.ModelChoiceField(
+        queryset=Client.objects.all(),
+        label="Client",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    type_service = forms.ModelChoiceField(
+        queryset=TypeService.objects.all(),
+        label="Type de service",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
 
 
-def calculer_montant(poids, volume, type_service=None):
-    """Calcule le montant total de l'expédition"""
-    montant = FRAIS_BASE + (poids * PRIX_PAR_KG) + (volume * PRIX_PAR_M3)
-    return round(montant, 2)
+class Step2Form(forms.Form):
+    """Étape 2: Destination et dimensions"""
+    destination = forms.ModelChoiceField(
+        queryset=Destination.objects.all(),
+        label="Destination",
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+    description = forms.CharField(
+        label="Description du colis",
+        required=False,
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 3})
+    )
 
 
+class Step3Form(forms.Form):
+    """Étape 3: Poids, volume et tournée"""
+    poids = forms.DecimalField(
+        label="Poids (kg)",
+        min_value=0,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'})
+    )
+    volume = forms.DecimalField(
+        label="Volume (m³)",
+        min_value=0,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'step': '0.01'})
+    )
+    tour = forms.ModelChoiceField(
+        queryset=Tour.objects.all(),
+        label="Tournée",
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-control'})
+    )
+
+
+class Step4Form(forms.Form):
+    """Étape 4: Confirmation"""
+    # Formulaire vide pour confirmation
+    pass
+
+
+STEP_FORMS = {
+    1: Step1Form,
+    2: Step2Form,
+    3: Step3Form,
+    4: Step4Form,
+}
+
+STEP_TITLES = {
+    1: "Informations client",
+    2: "Destination",
+    3: "Dimensions et tournée",
+    4: "Confirmation",
+}
+
+
+@login_required
 def expedition_wizard(request):
-    """Vue principale du formulaire multi-étapes"""
+    """Vue principale du wizard multi-étapes"""
+    # Gérer le retour en arrière via GET param
+    step_param = request.GET.get('step')
+    if step_param:
+        try:
+            new_step = int(step_param)
+            if 1 <= new_step <= 4:
+                request.session['wizard_step'] = new_step
+                return redirect('expedition:wizard')
+        except ValueError:
+            pass
     
-    # Initialiser la session si nécessaire
-    if 'expedition_data' not in request.session:
-        request.session['expedition_data'] = {}
-    
-    # Récupérer l'étape actuelle (1 par défaut)
-    current_step = int(request.GET.get('step', 1))
-    
-    # Récupérer les données de session
+    # Récupérer l'étape actuelle depuis la session
+    current_step = request.session.get('wizard_step', 1)
     expedition_data = request.session.get('expedition_data', {})
     
+    # Obtenir la classe de formulaire pour cette étape
+    FormClass = STEP_FORMS.get(current_step, Step1Form)
+    
     if request.method == 'POST':
-        if current_step == 1:
-            form = Step1ClientForm(request.POST)
-            if form.is_valid():
-                expedition_data['client_id'] = form.cleaned_data['client'].id
-                expedition_data['client_name'] = str(form.cleaned_data['client'])
-                request.session['expedition_data'] = expedition_data
-                return redirect('expedition:wizard') + '?step=2'
+        form = FormClass(request.POST)
         
-        elif current_step == 2:
-            form = Step2ServiceDestinationForm(request.POST)
-            if form.is_valid():
-                expedition_data['type_service_id'] = form.cleaned_data['type_service'].id
-                expedition_data['type_service_name'] = str(form.cleaned_data['type_service'])
-                expedition_data['destination_id'] = form.cleaned_data['destination'].id
-                expedition_data['destination_name'] = str(form.cleaned_data['destination'])
+        if form.is_valid():
+            # Sauvegarder les données de l'étape actuelle
+            if current_step == 1:
+                client = form.cleaned_data['client']
+                type_service = form.cleaned_data['type_service']
+                expedition_data['client_id'] = client.id
+                expedition_data['client_name'] = str(client)
+                expedition_data['type_service_id'] = type_service.id
+                expedition_data['type_service_name'] = str(type_service)
                 request.session['expedition_data'] = expedition_data
-                return redirect('expedition:wizard') + '?step=3'
-        
-        elif current_step == 3:
-            form = Step3ColisDetailsForm(request.POST)
-            if form.is_valid():
-                poids = form.cleaned_data['poids']
-                volume = form.cleaned_data['volume']
+                request.session['wizard_step'] = 2
                 
-                expedition_data['poids'] = poids
-                expedition_data['volume'] = volume
-                expedition_data['description'] = form.cleaned_data['description']
-                expedition_data['date_livraison_estimee'] = str(form.cleaned_data['date_livraison_estimee'])
-                expedition_data['montant_total'] = calculer_montant(poids, volume)
+            elif current_step == 2:
+                destination = form.cleaned_data['destination']
+                expedition_data['destination_id'] = destination.id
+                expedition_data['destination_name'] = str(destination)
+                expedition_data['description'] = form.cleaned_data.get('description', '')
                 request.session['expedition_data'] = expedition_data
-                return redirect('expedition:wizard') + '?step=4'
-        
-        elif current_step == 4:
-            form = Step4AffectationForm(request.POST)
-            if form.is_valid():
-                # Créer l'expédition
-                tournee = form.cleaned_data.get('tournee')
+                request.session['wizard_step'] = 3
                 
-                expedition = Shipment.objects.create(
-                    client_id=expedition_data['client_id'],
-                    service_type_id=expedition_data['type_service_id'],
-                    destination_id=expedition_data['destination_id'],
-                    weight=expedition_data['poids'],
-                    volume=expedition_data['volume'],
-                    description=expedition_data['description'],
-                    estimated_delivery_date=expedition_data['date_livraison_estimee'],
-                    total_price=expedition_data['montant_total'],
-                    tour=tournee,
-                    status='EN_ATTENTE' if not tournee else 'EN_COURS'
-                )
+            elif current_step == 3:
+                expedition_data['poids'] = str(form.cleaned_data['poids'])
+                expedition_data['volume'] = str(form.cleaned_data['volume'])
+                tour = form.cleaned_data.get('tour')
+                if tour:
+                    expedition_data['tour_id'] = tour.id_tour
+                    expedition_data['tour_name'] = str(tour)
+                # Calculer le montant
+                expedition_data['montant_total'] = str(calculate_price(expedition_data))
+                request.session['expedition_data'] = expedition_data
+                request.session['wizard_step'] = 4
+                
+            elif current_step == 4:
+                # Création de l'expédition
+                shipment = Shipment()
+                
+                if expedition_data.get('client_id'):
+                    shipment.id_client = Client.objects.filter(id=expedition_data['client_id']).first()
+                if expedition_data.get('type_service_id'):
+                    shipment.id_service_type = TypeService.objects.filter(id=expedition_data['type_service_id']).first()
+                if expedition_data.get('destination_id'):
+                    shipment.id_destination = Destination.objects.filter(id=expedition_data['destination_id']).first()
+                if expedition_data.get('tour_id'):
+                    shipment.id_tour = Tour.objects.filter(id_tour=expedition_data['tour_id']).first()
+                
+                shipment.weight = float(expedition_data.get('poids') or 0)
+                shipment.volume = float(expedition_data.get('volume') or 0)
+                shipment.description = expedition_data.get('description', '')
+                shipment.created_by = request.user
+                
+                shipment.save()
                 
                 # Nettoyer la session
-                del request.session['expedition_data']
+                request.session.pop('wizard_step', None)
+                request.session.pop('expedition_data', None)
                 
-                messages.success(request, f"Expédition {expedition.tracking_number} créée avec succès!")
-                return redirect('expedition:success', pk=expedition.pk)
-    
+                return redirect('expedition:success', pk=shipment.pk)
+            
+            return redirect('expedition:wizard')
     else:
-        # GET request - afficher le formulaire approprié
+        # Pré-remplir le formulaire avec les données existantes
+        initial = {}
         if current_step == 1:
-            form = Step1ClientForm()
+            if expedition_data.get('client_id'):
+                initial['client'] = expedition_data['client_id']
+            if expedition_data.get('type_service_id'):
+                initial['type_service'] = expedition_data['type_service_id']
         elif current_step == 2:
-            if 'client_id' not in expedition_data:
-                return redirect('expedition:wizard') + '?step=1'
-            form = Step2ServiceDestinationForm()
+            if expedition_data.get('destination_id'):
+                initial['destination'] = expedition_data['destination_id']
+            if expedition_data.get('description'):
+                initial['description'] = expedition_data['description']
         elif current_step == 3:
-            if 'destination_id' not in expedition_data:
-                return redirect('expedition:wizard') + '?step=2'
-            form = Step3ColisDetailsForm()
-        elif current_step == 4:
-            if 'poids' not in expedition_data:
-                return redirect('expedition:wizard') + '?step=3'
-            form = Step4AffectationForm()
-        else:
-            return redirect('expedition:wizard') + '?step=1'
+            if expedition_data.get('poids'):
+                initial['poids'] = expedition_data['poids']
+            if expedition_data.get('volume'):
+                initial['volume'] = expedition_data['volume']
+            if expedition_data.get('tour_id'):
+                initial['tour'] = expedition_data['tour_id']
+        
+        form = FormClass(initial=initial)
     
+    # Préparer le contexte
     context = {
-        'form': form,
         'current_step': current_step,
         'total_steps': 4,
         'expedition_data': expedition_data,
-        'step_titles': {
-            1: 'Sélection du client',
-            2: 'Service et destination',
-            3: 'Détails du colis',
-            4: 'Affectation à une tournée'
-        }
+        'step_titles': STEP_TITLES,
+        'form': form,
     }
     
     return render(request, 'expedition/wizard.html', context)
 
 
+def calculate_price(expedition_data):
+    """Calcule le prix estimé basé sur les données du wizard"""
+    price = Decimal('0.00')
+    
+    if expedition_data.get('destination_id'):
+        destination = Destination.objects.filter(id=expedition_data['destination_id']).first()
+        if destination and destination.zone:
+            price += destination.zone.base_price or Decimal('0')
+    
+    if expedition_data.get('type_service_id'):
+        service_type = TypeService.objects.filter(id=expedition_data['type_service_id']).first()
+        if service_type:
+            poids = Decimal(expedition_data.get('poids') or '0')
+            volume = Decimal(expedition_data.get('volume') or '0')
+            price += poids * (service_type.weight_rate or Decimal('0'))
+            price += volume * (service_type.volume_rate or Decimal('0'))
+    
+    return price
+
+
+@login_required
 def calculate_price_ajax(request):
     """API pour calculer le prix en temps réel"""
-    if request.method == 'GET':
-        try:
-            poids = float(request.GET.get('poids', 0))
-            volume = float(request.GET.get('volume', 0))
-            montant = calculer_montant(poids, volume)
-            return JsonResponse({'montant': montant, 'success': True})
-        except (ValueError, TypeError):
-            return JsonResponse({'error': 'Valeurs invalides', 'success': False})
-    return JsonResponse({'error': 'Méthode non autorisée', 'success': False})
+    expedition_data = {
+        'destination_id': request.GET.get('destination_id'),
+        'type_service_id': request.GET.get('type_service_id'),
+        'poids': request.GET.get('poids'),
+        'volume': request.GET.get('volume'),
+    }
+    
+    price = calculate_price(expedition_data)
+    return JsonResponse({'success': True, 'montant': float(price)})
 
 
+@login_required
 def expedition_success(request, pk):
-    """Page de confirmation après création"""
-    expedition = Shipment.objects.get(pk=pk)
-    return render(request, 'expedition/success.html', {'expedition': expedition})
+    """Page de succès après création"""
+    shipment = get_object_or_404(Shipment, pk=pk)
+    return render(request, 'expedition/success.html', {'shipment': shipment})
 
 
+@login_required
 def expedition_reset(request):
-    """Réinitialiser le formulaire wizard"""
-    if 'expedition_data' in request.session:
-        del request.session['expedition_data']
+    """Réinitialiser le wizard"""
+    request.session.pop('wizard_step', None)
+    request.session.pop('wizard_data', None)
     return redirect('expedition:wizard')

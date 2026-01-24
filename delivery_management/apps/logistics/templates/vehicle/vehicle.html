@@ -19,7 +19,7 @@
   </div>
 
   <div class="clients-actions">
-    <a href="{% url 'create-vehicle' %}" class="btn primary">
+    <a href="{% url 'create-vehicule' %}" class="btn primary">
       <i class="fa fa-plus"></i> Nouveau Véhicule
     </a>
 
@@ -27,7 +27,7 @@
       <i class="fa fa-print"></i> Imprimer la liste
     </button>
 
-    <a href="{% url 'export-vehicles-csv' %}" class="btn">
+    <a href="{% url 'export-vehicules-csv' %}" class="btn">
       <i class="fa fa-file-export"></i> Exporter la liste
     </a>
   </div>
@@ -45,19 +45,19 @@
         </tr>
       </thead>
       <tbody>
-        {% for vehicle in vehicles %}
+        {% for vehicule in vehicules %}
         <tr>
           <td>{{ forloop.counter }}</td>
-          <td>{{ vehicle.plate_number }}</td>
-          <td>{{ vehicle.vehicle_type }}</td>
-          <td>{{ vehicle.capacity }}</td>
-          <td>{{ vehicle.status }}</td>
+          <td>{{ vehicule.immatriculation }}</td>
+          <td>{{ vehicule.type }}</td>
+          <td>-</td>
+          <td>Actif</td>
           <td>
-            <a href="{% url 'update-vehicle' vehicle.id %}" class="btn small"
+            <a href="{% url 'update-vehicule' vehicule.id %}" class="btn small"
               ><i class="fa fa-edit"></i> Modifier</a
             >
             <a
-              href="{% url 'delete-vehicle' vehicle.id %}"
+              href="{% url 'delete-vehicule' vehicule.id %}"
               class="btn small danger"
               ><i class="fa fa-trash"></i> Supprimer</a
             >

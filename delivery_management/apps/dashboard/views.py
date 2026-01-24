@@ -23,9 +23,7 @@ def agent_dashboard(request):
     if request.user.role != 'agent':
         return HttpResponseForbidden("Access denied")
 
-    # Note: Le modèle Shipment n'a pas de champ created_by pour l'instant
-    # Afficher toutes les expéditions pour les agents
-    expeditions = Shipment.objects.all()
+    expeditions = Shipment.objects.filter(created_by=request.user)
 
     context = {
         'total_expeditions': expeditions.count(),

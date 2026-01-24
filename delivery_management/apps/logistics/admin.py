@@ -1,34 +1,40 @@
 from django.contrib import admin
-from .models import Shipment 
-from .models import Driver, Vehicle, Tour, ServiceType, Destination
+from .models import Shipment, Driver, Vehicule, Tour, TypeService, Destination, Zone
+
 # Register your models here.
 
 @admin.register(Shipment)
 class ExpeditionAdmin(admin.ModelAdmin):
-    list_display = ('tracking_number', 'client', 'status', 'service_type', 'destination', 'tour', 'total_price', 'created_at')
-    list_filter = ('status', 'service_type', 'created_at')
-    search_fields = ('tracking_number', 'client__last_name', 'destination__city')
+    list_display = ('tracking_number', 'id_client', 'status', 'id_service_type', 'id_destination', 'id_tour', 'total_price', 'created_at')
+    list_filter = ('status', 'id_service_type', 'created_at')
+    search_fields = ('tracking_number',)
 
 @admin.register(Driver)
-class ChauffeurAdmin(admin.ModelAdmin):
-    list_display = ('last_name', 'phone')
+class DriverAdmin(admin.ModelAdmin):
+    list_display = ('first_name', 'last_name', 'phone')
     search_fields = ('last_name',)
 
-@admin.register(Vehicle)
+@admin.register(Vehicule)
 class VehiculeAdmin(admin.ModelAdmin):
-    list_display = ('plate_number', 'vehicle_type')
-    search_fields = ('plate_number',)
+    list_display = ('immatriculation', 'type')
+    search_fields = ('immatriculation',)
 
 @admin.register(Tour)
-class TourneeAdmin(admin.ModelAdmin):
-    list_display = ('tour_date', 'driver', 'vehicle')
+class TourAdmin(admin.ModelAdmin):
+    list_display = ('tour_date', 'id_driver', 'id_vehicle')
     list_filter = ('tour_date',)
+
+@admin.register(Zone)
+class ZoneAdmin(admin.ModelAdmin):
+    list_display = ('nom', 'base_price')
+    search_fields = ('nom',)
 
 @admin.register(Destination)
 class DestinationAdmin(admin.ModelAdmin):
-    list_display = ('city', 'country', 'postal_code')
-    search_fields = ('city', 'country')
+    list_display = ('ville', 'pays', 'code_postal', 'zone')
+    search_fields = ('ville', 'pays')
+    list_filter = ('zone',)
 
-@admin.register(ServiceType)
-class ServiceTypeAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+@admin.register(TypeService)
+class TypeServiceAdmin(admin.ModelAdmin):
+    list_display = ('nom', 'weight_rate', 'volume_rate')

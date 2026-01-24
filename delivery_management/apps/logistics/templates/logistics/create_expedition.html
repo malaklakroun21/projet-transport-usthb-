@@ -1,0 +1,118 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nouvelle Expédition - TransportPro</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f5f7fa; min-height: 100vh; }
+        .container { max-width: 800px; margin: 40px auto; padding: 20px; }
+        .card { background: white; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); padding: 30px; }
+        h1 { color: #1a1a2e; margin-bottom: 30px; font-size: 24px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: 500; color: #333; }
+        input, select, textarea { 
+            width: 100%; 
+            padding: 12px 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+        input:focus, select:focus, textarea:focus { 
+            outline: none; 
+            border-color: #667eea; 
+        }
+        .btn { 
+            padding: 12px 30px; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        .btn-primary { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+        .btn-secondary { background: #e9ecef; color: #333; margin-right: 10px; }
+        .btn-secondary:hover { background: #dee2e6; }
+        .form-actions { margin-top: 30px; display: flex; justify-content: flex-end; }
+        .back-link { display: inline-block; margin-bottom: 20px; color: #667eea; text-decoration: none; }
+        .back-link:hover { text-decoration: underline; }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="{% url 'home' %}" class="back-link">← Retour au tableau de bord</a>
+        
+        <div class="card">
+            <h1>Nouvelle Expédition</h1>
+            
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_id_client">Client</label>
+                        {{ form.id_client }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_id_service_type">Type de service</label>
+                        {{ form.id_service_type }}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_id_destination">Destination</label>
+                        {{ form.id_destination }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_id_tour">Tournée</label>
+                        {{ form.id_tour }}
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_weight">Poids (kg)</label>
+                        {{ form.weight }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_volume">Volume (m³)</label>
+                        {{ form.volume }}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_description">Description</label>
+                    {{ form.description }}
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="id_estimated_delivery_date">Date de livraison estimée</label>
+                        {{ form.estimated_delivery_date }}
+                    </div>
+                    <div class="form-group">
+                        <label for="id_status">Statut</label>
+                        {{ form.status }}
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <a href="{% url 'home' %}" class="btn btn-secondary">Annuler</a>
+                    <button type="submit" class="btn btn-primary">Créer l'expédition</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

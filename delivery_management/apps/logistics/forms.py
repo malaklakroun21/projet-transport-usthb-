@@ -1,54 +1,39 @@
-from .models import Shipment
 from django import forms
+from django.forms import ModelForm
+from .models import Shipment, Driver, Vehicule, Destination, TypeService, Zone
 
 
 class ExpeditionForm(forms.ModelForm):
     class Meta:
         model = Shipment
         fields = "__all__"
-from django.forms import ModelForm 
-from .models import Driver
-from .models import Vehicle 
-from .models import Destination
-from .models import ServiceType
-from .models import Zone
+
 
 class DriverForm(ModelForm):
     class Meta:
         model = Driver
         fields = '__all__'
-        exclude = ['created_at']
 
 
-
-class VehicleForm(ModelForm):
+class VehiculeForm(ModelForm):
     class Meta:
-        model = Vehicle
+        model = Vehicule
         fields = '__all__'
-        exclude = ['created_at']        
-
-
 
 
 class DestinationForm(ModelForm):
     class Meta:
         model = Destination
         fields = '__all__'
-        exclude = ['created_at']        
 
 
-
-
-class ServiceTypeForm(ModelForm):
+class TypeServiceForm(ModelForm):
     class Meta:
-        model = ServiceType
+        model = TypeService
         fields = '__all__'
-        exclude = ['created_at']        
 
 
-
-class zoneForm(ModelForm):
+class ZoneForm(ModelForm):
     class Meta:
         model = Zone
         fields = '__all__'
-        exclude = ['created_at']        

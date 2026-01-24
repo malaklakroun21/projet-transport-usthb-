@@ -1,9 +1,13 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from .models import Shipment
-from .forms import ExpeditionForm
+from django.db.models import Q
+from django.http import HttpResponse
+import csv
+
+from .models import Shipment, Driver, Vehicule, Destination, TypeService, Zone
+from .forms import ExpeditionForm, DriverForm, VehiculeForm, DestinationForm, TypeServiceForm, ZoneForm
 
 
-# Create your views here.
+# ================ EXPEDITIONS ================
 
 def expedition_list(request):
     expeditions = Shipment.objects.all().order_by("-id")
@@ -20,59 +24,41 @@ def create_expedition(request):
         form = ExpeditionForm(request.POST)
         if form.is_valid():
             expedition = form.save()
-            # TODO: adjust redirect name to your urls.py name if different
             return redirect("expedition_detail", pk=expedition.pk)
     else:
         form = ExpeditionForm()
-
     return render(request, "logistics/create_expedition.html", {"form": form})
 
 
 def update_expedition(request, pk):
     expedition = get_object_or_404(Shipment, pk=pk)
-
     if request.method == "POST":
         form = ExpeditionForm(request.POST, instance=expedition)
         if form.is_valid():
             expedition = form.save()
-            # TODO: adjust redirect name to your urls.py name if different
             return redirect("expedition_detail", pk=expedition.pk)
     else:
         form = ExpeditionForm(instance=expedition)
-
-    return render(
-        request,
-        "logistics/update_expedition.html",
-        {"form": form, "expedition": expedition},
-    )
+    return render(request, "logistics/update_expedition.html", {"form": form, "expedition": expedition})
 
 
 def delete_expedition(request, pk):
     expedition = get_object_or_404(Shipment, pk=pk)
-
-    # Verification: only delete on POST (prevents accidental deletes via URL)
     if request.method == "POST":
         expedition.delete()
-        # TODO: adjust redirect name to your urls.py name if different
         return redirect("expedition_list")
-
     return render(request, "logistics/delete_expedition.html", {"expedition": expedition})
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import Driver,Vehicle,Destination,ServiceType,Zone
-from .forms import DriverForm,VehicleForm,DestinationForm,ServiceTypeForm,zoneForm
-from django.db.models import Q
-from django.http import HttpResponse
-import csv
 
-# ---------------- LIST + FILTER ----------------
+
+# ================ DRIVERS ================
+
 def drivers(request):
     query = request.GET.get('q')
     available = request.GET.get('available')
-
-    drivers = Driver.objects.all()
+    drivers_qs = Driver.objects.all()
 
     if query:
-        drivers = drivers.filter(
+        drivers_qs = drivers_qs.filter(
             Q(first_name__icontains=query) |
             Q(last_name__icontains=query) |
             Q(phone__icontains=query) |
@@ -80,18 +66,18 @@ def drivers(request):
         )
 
     if available == 'YES':
-        drivers = drivers.filter(available=True)
+        drivers_qs = drivers_qs.filter(available=True)
     elif available == 'NO':
-        drivers = drivers.filter(available=False)
+        drivers_qs = drivers_qs.filter(available=False)
 
     context = {
-        'drivers': drivers,
+        'drivers': drivers_qs,
         'query': query,
         'available': available or 'ALL'
     }
     return render(request, 'driver/driver.html', context)
 
-# ---------------- CREATE ----------------
+
 def create_driver(request):
     form = DriverForm()
     if request.method == 'POST':
@@ -101,7 +87,7 @@ def create_driver(request):
             return redirect('drivers')
     return render(request, 'driver/driver-form.html', {'form': form})
 
-# ---------------- UPDATE ----------------
+
 def update_driver(request, pk):
     driver = get_object_or_404(Driver, pk=pk)
     form = DriverForm(instance=driver)
@@ -112,7 +98,7 @@ def update_driver(request, pk):
             return redirect('drivers')
     return render(request, 'driver/driver-form.html', {'form': form})
 
-# ---------------- DELETE ----------------
+
 def delete_driver(request, pk):
     driver = get_object_or_404(Driver, pk=pk)
     if request.method == 'POST':
@@ -120,7 +106,7 @@ def delete_driver(request, pk):
         return redirect('drivers')
     return render(request, 'driver/driver-delete.html', {'driver': driver})
 
-# ---------------- EXPORT CSV ----------------
+
 def export_drivers_csv(request):
     response = HttpResponse(
         content_type='text/csv',
@@ -138,66 +124,76 @@ def export_drivers_csv(request):
         ])
     return response
 
-# ---------------- VEHICLES ----------------
 
-def vehicles(request):
+# ================ VEHICULES ================
+
+def vehicules(request):
     query = request.GET.get('q')
-    vehicles = Vehicle.objects.all()
+    vehicules_qs = Vehicule.objects.all()
     if query:
-        vehicles = vehicles.filter(Q(plate_number__icontains=query) | Q(vehicle_type__icontains=query))
-    return render(request, 'vehicle/vehicle.html', {'vehicles': vehicles, 'query': query})
+        vehicules_qs = vehicules_qs.filter(
+            Q(immatriculation__icontains=query) | Q(type__icontains=query)
+        )
+    return render(request, 'vehicle/vehicle.html', {'vehicules': vehicules_qs, 'query': query})
 
-def create_vehicle(request):
-    form = VehicleForm()
+
+def create_vehicule(request):
+    form = VehiculeForm()
     if request.method == 'POST':
-        form = VehicleForm(request.POST)
+        form = VehiculeForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('vehicles')
+            return redirect('vehicules')
     return render(request, 'vehicle/vehicle-form.html', {'form': form})
 
-def update_vehicle(request, pk):
-    vehicle = get_object_or_404(Vehicle, pk=pk)
-    form = VehicleForm(instance=vehicle)
+
+def update_vehicule(request, pk):
+    vehicule = get_object_or_404(Vehicule, pk=pk)
+    form = VehiculeForm(instance=vehicule)
     if request.method == 'POST':
-        form = VehicleForm(request.POST, instance=vehicle)
+        form = VehiculeForm(request.POST, instance=vehicule)
         if form.is_valid():
             form.save()
-            return redirect('vehicles')
+            return redirect('vehicules')
     return render(request, 'vehicle/vehicle-form.html', {'form': form})
 
-def delete_vehicle(request, pk):
-    vehicle = get_object_or_404(Vehicle, pk=pk)
-    if request.method == 'POST':
-        vehicle.delete()
-        return redirect('vehicles')
-    return render(request, 'vehicle/vehicle-delete.html', {'vehicle': vehicle})
 
-def export_vehicles_csv(request):
-    response = HttpResponse(content_type='text/csv', headers={'Content-Disposition': 'attachment; filename="vehicles.csv"'})
+def delete_vehicule(request, pk):
+    vehicule = get_object_or_404(Vehicule, pk=pk)
+    if request.method == 'POST':
+        vehicule.delete()
+        return redirect('vehicules')
+    return render(request, 'vehicle/vehicle-delete.html', {'vehicule': vehicule})
+
+
+def export_vehicules_csv(request):
+    response = HttpResponse(
+        content_type='text/csv',
+        headers={'Content-Disposition': 'attachment; filename="vehicules.csv"'},
+    )
     writer = csv.writer(response)
-    writer.writerow(['Plaque', 'Type', 'Capacité', 'Statut'])
-    for v in Vehicle.objects.all():
-        writer.writerow([v.plate_number, v.vehicle_type, v.capacity, v.status])
+    writer.writerow(['Immatriculation', 'Type'])
+    for v in Vehicule.objects.all():
+        writer.writerow([v.immatriculation, v.type])
     return response
 
-# ---------------- DESTINATIONS ----------------
+
+# ================ DESTINATIONS ================
 
 def destinations(request):
     query = request.GET.get('q')
-
-    destinations = Destination.objects.select_related('zone').all()
+    destinations_qs = Destination.objects.select_related('zone').all()
 
     if query:
-        destinations = destinations.filter(
-            Q(city__icontains=query) |
-            Q(country__icontains=query) |
-            Q(postal_code__icontains=query) |
-            Q(zone__name__icontains=query)
+        destinations_qs = destinations_qs.filter(
+            Q(ville__icontains=query) |
+            Q(pays__icontains=query) |
+            Q(code_postal__icontains=query) |
+            Q(zone__nom__icontains=query)
         )
 
     return render(request, 'destination/destination.html', {
-        'destinations': destinations,
+        'destinations': destinations_qs,
         'query': query
     })
 
@@ -232,26 +228,26 @@ def delete_destination(request, pk):
 
 
 def export_destinations_csv(request):
-
     response = HttpResponse(
         content_type='text/csv',
         headers={'Content-Disposition': 'attachment; filename="destinations.csv"'},
     )
     writer = csv.writer(response)
-    writer.writerow(['Ville', 'Pays', 'Code Postal', 'Zone'])
-
+    writer.writerow(['Adresse', 'Ville', 'Pays', 'Code Postal', 'Zone'])
     for d in Destination.objects.all():
-        writer.writerow([d.city, d.country, d.postal_code, d.zone.name])
-
+        zone_nom = d.zone.nom if d.zone else ''
+        writer.writerow([d.adresse, d.ville, d.pays, d.code_postal, zone_nom])
     return response
 
-# ---------------- SERVICE TYPES ----------------
-def service_types(request):
+
+# ================ TYPES DE SERVICE ================
+
+def type_services(request):
     query = request.GET.get('q')
-    services = ServiceType.objects.all()
+    services = TypeService.objects.all()
 
     if query:
-        services = services.filter(name__icontains=query)
+        services = services.filter(nom__icontains=query)
 
     return render(request, 'type/type.html', {
         'services': services,
@@ -259,66 +255,66 @@ def service_types(request):
     })
 
 
-def create_service_type(request):
-    form = ServiceTypeForm()
+def create_type_service(request):
+    form = TypeServiceForm()
     if request.method == 'POST':
-        form = ServiceTypeForm(request.POST)
+        form = TypeServiceForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('service-types')
+            return redirect('type-services')
     return render(request, 'type/type-form.html', {'form': form})
 
 
-def update_service_type(request, pk):
-    service = get_object_or_404(ServiceType, pk=pk)
-    form = ServiceTypeForm(instance=service)
+def update_type_service(request, pk):
+    service = get_object_or_404(TypeService, pk=pk)
+    form = TypeServiceForm(instance=service)
     if request.method == 'POST':
-        form = ServiceTypeForm(request.POST, instance=service)
+        form = TypeServiceForm(request.POST, instance=service)
         if form.is_valid():
             form.save()
-            return redirect('service-types')
+            return redirect('type-services')
     return render(request, 'type/type-form.html', {'form': form})
 
 
-def delete_service_type(request, pk):
-    service = get_object_or_404(ServiceType, pk=pk)
+def delete_type_service(request, pk):
+    service = get_object_or_404(TypeService, pk=pk)
     if request.method == 'POST':
         service.delete()
-        return redirect('service-types')
+        return redirect('type-services')
     return render(request, 'type/type-delete.html', {'service': service})
-def export_service_types_csv(request):
+
+
+def export_type_services_csv(request):
     response = HttpResponse(
         content_type='text/csv',
-        headers={'Content-Disposition': 'attachment; filename="service_types.csv"'},
+        headers={'Content-Disposition': 'attachment; filename="type_services.csv"'},
     )
     writer = csv.writer(response)
     writer.writerow(['Nom', 'Tarif Poids', 'Tarif Volume'])
-
-    for s in ServiceType.objects.all():
-        writer.writerow([s.name, s.weight_rate, s.volume_rate])
-
+    for s in TypeService.objects.all():
+        writer.writerow([s.nom, s.weight_rate, s.volume_rate])
     return response
 
 
-# ---------------- ZONES ----------------
+# ================ ZONES ================
 
 def zones(request):
     query = request.GET.get('q')
-    zones = Zone.objects.all()
+    zones_qs = Zone.objects.all()
 
     if query:
-        zones = zones.filter(name__icontains=query)
+        zones_qs = zones_qs.filter(nom__icontains=query)
 
     return render(request, 'zone/zone.html', {
-        'zones': zones,
+        'zones': zones_qs,
         'query': query
     })
 
 
 def create_zone(request):
-    form = zoneForm()
+    form = ZoneForm()
     if request.method == 'POST':
-        form = zoneForm(request.POST)
+        form = ZoneForm(request.POST)
         if form.is_valid():
             form.save()
             return redirect('zones')
@@ -327,9 +323,9 @@ def create_zone(request):
 
 def update_zone(request, pk):
     zone = get_object_or_404(Zone, pk=pk)
-    form = zoneForm(instance=zone)
+    form = ZoneForm(instance=zone)
     if request.method == 'POST':
-        form = zoneForm(request.POST, instance=zone)
+        form = ZoneForm(request.POST, instance=zone)
         if form.is_valid():
             form.save()
             return redirect('zones')
@@ -351,8 +347,6 @@ def export_zones_csv(request):
     )
     writer = csv.writer(response)
     writer.writerow(['Zone', 'Prix de base'])
-
     for z in Zone.objects.all():
-        writer.writerow([z.name, z.base_price])
-
+        writer.writerow([z.nom, z.base_price])
     return response
