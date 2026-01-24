@@ -1,0 +1,194 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/driver.css' %}" />
+<style>
+    .form-container {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 800px;
+        margin: 0 auto;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .form-title { font-size: 1.5rem; font-weight: bold; color: #1e293b; margin-bottom: 24px; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group.full-width { grid-column: span 2; }
+    .form-group label { display: block; font-size: 0.9rem; font-weight: 500; color: #374151; margin-bottom: 6px; }
+    .form-control {
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+    .form-control:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1); }
+    .checkbox-group { display: flex; align-items: center; gap: 8px; }
+    .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; }
+    .form-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid #e5e7eb;
+    }
+    .section-divider {
+        grid-column: span 2;
+        border-top: 1px solid #e5e7eb;
+        margin: 8px 0 16px;
+        padding-top: 16px;
+    }
+    .section-divider h4 { color: #64748b; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em; }
+    .info-banner {
+        background: #eff6ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        color: #1e40af;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="clients-page">
+    <div style="margin-bottom: 16px;">
+        <a href="{% url 'tour:list' %}" class="btn small">← Retour aux tournées</a>
+    </div>
+
+    <div class="form-container">
+        <h2 class="form-title">{{ title }}</h2>
+
+        {% if tour %}
+        <!-- Mode modification: formulaire complet -->
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-grid">
+                <!-- Ressources -->
+                <div class="form-group">
+                    <label for="id_id_driver">Chauffeur</label>
+                    {{ form.id_driver }}
+                </div>
+                <div class="form-group">
+                    <label for="id_id_vehicle">Véhicule</label>
+                    {{ form.id_vehicle }}
+                </div>
+
+                <!-- Date et horaires -->
+                <div class="form-group">
+                    <label for="id_tour_date">Date de la tournée</label>
+                    {{ form.tour_date }}
+                </div>
+                <div class="form-group">
+                    <label for="id_status">Statut</label>
+                    {{ form.status }}
+                </div>
+                <div class="form-group">
+                    <label for="id_starting_hour">Heure de départ</label>
+                    {{ form.starting_hour }}
+                </div>
+                <div class="form-group">
+                    <label for="id_finishing_hour">Heure d'arrivée</label>
+                    {{ form.finishing_hour }}
+                </div>
+
+                <!-- Données du trajet (seulement en modification) -->
+                <div class="section-divider">
+                    <h4><i class="fa fa-road"></i> Données du trajet (à remplir après le trajet)</h4>
+                </div>
+                <div class="form-group">
+                    <label for="id_kilometers">Kilométrage parcouru (km)</label>
+                    {{ form.kilometers }}
+                </div>
+                <div class="form-group">
+                    <label for="id_fuel_consumption">Consommation carburant (L)</label>
+                    {{ form.fuel_consumption }}
+                </div>
+
+                <!-- Incidents (seulement en modification) -->
+                <div class="section-divider">
+                    <h4><i class="fa fa-exclamation-triangle"></i> Incidents (à remplir après le trajet)</h4>
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        {{ form.has_delay }}
+                        <label for="id_has_delay">Retard signalé</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="id_delay_minutes">Minutes de retard</label>
+                    {{ form.delay_minutes }}
+                </div>
+                <div class="form-group">
+                    <div class="checkbox-group">
+                        {{ form.has_technical_issue }}
+                        <label for="id_has_technical_issue">Problème technique</label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="id_technical_issue_description">Description du problème</label>
+                    {{ form.technical_issue_description }}
+                </div>
+
+                <!-- Commentaires -->
+                <div class="form-group full-width">
+                    <label for="id_comments">Commentaires</label>
+                    {{ form.comments }}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'tour:list' %}" class="btn">Annuler</a>
+                <button type="submit" class="btn primary">
+                    <i class="fa fa-save"></i> Enregistrer
+                </button>
+            </div>
+        </form>
+        {% else %}
+        <!-- Mode création: formulaire simplifié -->
+        <div class="info-banner">
+            <i class="fa fa-info-circle"></i>
+            <span>Assignez les ressources pour la nouvelle tournée. Les données de trajet et incidents seront renseignés après la fin du trajet.</span>
+        </div>
+        <form method="POST">
+            {% csrf_token %}
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="id_id_driver">Chauffeur <span style="color: #dc2626;">*</span></label>
+                    {{ form.id_driver }}
+                </div>
+                <div class="form-group">
+                    <label for="id_id_vehicle">Véhicule <span style="color: #dc2626;">*</span></label>
+                    {{ form.id_vehicle }}
+                </div>
+                <div class="form-group">
+                    <label for="id_tour_date">Date de la tournée <span style="color: #dc2626;">*</span></label>
+                    {{ form.tour_date }}
+                </div>
+                <div class="form-group">
+                    <label for="id_starting_hour">Heure de départ</label>
+                    {{ form.starting_hour }}
+                </div>
+                <div class="form-group full-width">
+                    <label for="id_comments">Notes (optionnel)</label>
+                    {{ form.comments }}
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'tour:list' %}" class="btn">Annuler</a>
+                <button type="submit" class="btn primary">
+                    <i class="fa fa-plus"></i> Créer la tournée
+                </button>
+            </div>
+        </form>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

@@ -99,16 +99,29 @@ class Shipment(models.Model):
     volume = models.FloatField(null=True, blank=True)
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     estimated_delivery_date = models.DateField(null=True, blank=True)
     reel_delivery_date = models.DateField(null=True, blank=True)
 
+    # Workflow: Enregistré → Transit → Tri → Livraison → [Livré | Échec]
     STATUS_CHOICES = [
-        ('CREATED', 'Créée'),
-        ('PENDING', 'En attente'),
-        ('IN_TRANSIT', 'En transit'),
-        ('DELIVERED', 'Livrée'),
-        ('FAILED', 'Échec'),
+        ('REGISTERED', 'Enregistré'),
+        ('TRANSIT', 'En transit'),
+        ('SORTING', 'Centre de tri'),
+        ('OUT_FOR_DELIVERY', 'En cours de livraison'),
+        ('DELIVERED', 'Livré'),
+        ('FAILED', 'Échec de livraison'),
     ]
+    
+    # Workflow transitions allowed
+    STATUS_WORKFLOW = {
+        'REGISTERED': ['TRANSIT'],
+        'TRANSIT': ['SORTING'],
+        'SORTING': ['OUT_FOR_DELIVERY'],
+        'OUT_FOR_DELIVERY': ['DELIVERED', 'FAILED'],
+        'DELIVERED': [],
+        'FAILED': ['OUT_FOR_DELIVERY'],  # Retry allowed
+    }
     
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -120,7 +133,7 @@ class Shipment(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICES,
-        default='CREATED'
+        default='REGISTERED'
     )
     total_price = models.DecimalField(max_digits=10, decimal_places=2, default=0, blank=True)
 
@@ -149,4 +162,48 @@ class Shipment(models.Model):
             self.tracking_number = f"EXP-{uuid.uuid4().hex[:8].upper()}"
         self.total_price = self.calculate_total()
         super().save(*args, **kwargs)
+    
+    def can_transition_to(self, new_status):
+        """Check if transition to new_status is allowed"""
+        allowed = self.STATUS_WORKFLOW.get(self.status, [])
+        return new_status in allowed
+    
+    def get_next_statuses(self):
+        """Get list of valid next statuses"""
+        return self.STATUS_WORKFLOW.get(self.status, [])
+    
+    def get_status_progress(self):
+        """Return progress percentage for timeline"""
+        progress_map = {
+            'REGISTERED': 0,
+            'TRANSIT': 25,
+            'SORTING': 50,
+            'OUT_FOR_DELIVERY': 75,
+            'DELIVERED': 100,
+            'FAILED': 75,
+        }
+        return progress_map.get(self.status, 0)
+
+
+class ShipmentStatusHistory(models.Model):
+    """Track all status changes for timeline"""
+    shipment = models.ForeignKey(Shipment, on_delete=models.CASCADE, related_name='status_history')
+    status = models.CharField(max_length=20, choices=Shipment.STATUS_CHOICES)
+    changed_at = models.DateTimeField(auto_now_add=True)
+    changed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True
+    )
+    location = models.CharField(max_length=255, blank=True)
+    notes = models.TextField(blank=True)
+    
+    class Meta:
+        verbose_name = "Historique de statut"
+        verbose_name_plural = "Historiques de statuts"
+        ordering = ['-changed_at']
+    
+    def __str__(self):
+        return f"{self.shipment.tracking_number} - {self.get_status_display()} ({self.changed_at})"
 

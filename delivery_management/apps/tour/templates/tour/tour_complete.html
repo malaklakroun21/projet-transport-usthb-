@@ -1,0 +1,110 @@
+{% extends 'main.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/driver.css' %}" />
+<style>
+    .complete-form {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        max-width: 600px;
+        margin: 0 auto;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .form-title { font-size: 1.5rem; font-weight: bold; color: #1e293b; margin-bottom: 8px; }
+    .form-subtitle { color: #64748b; margin-bottom: 24px; }
+    .form-group { margin-bottom: 16px; }
+    .form-group label { display: block; font-size: 0.9rem; font-weight: 500; color: #374151; margin-bottom: 6px; }
+    .form-control { width: 100%; padding: 10px 14px; border: 1px solid #d1d5db; border-radius: 8px; font-size: 14px; }
+    .form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+    .checkbox-group { display: flex; align-items: center; gap: 8px; padding: 8px 0; }
+    .checkbox-group input[type="checkbox"] { width: 18px; height: 18px; }
+    .form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px; padding-top: 16px; border-top: 1px solid #e5e7eb; }
+    .tour-summary {
+        background: #f0fdf4;
+        border: 1px solid #bbf7d0;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 24px;
+    }
+    .tour-summary h4 { color: #166534; margin-bottom: 8px; }
+    .summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; font-size: 0.9rem; }
+    .summary-grid span { color: #64748b; }
+    .summary-grid strong { color: #1e293b; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="clients-page">
+    <div style="margin-bottom: 16px;">
+        <a href="{% url 'tour:detail' tour.pk %}" class="btn small">← Retour</a>
+    </div>
+
+    <div class="complete-form">
+        <h2 class="form-title">Terminer la tournée #{{ tour.id_tour }}</h2>
+        <p class="form-subtitle">Enregistrez les données finales du trajet</p>
+
+        <div class="tour-summary">
+            <h4><i class="fa fa-check-circle"></i> Résumé de la tournée</h4>
+            <div class="summary-grid">
+                <div><span>Chauffeur:</span> <strong>{{ tour.id_driver|default:"Non assigné" }}</strong></div>
+                <div><span>Véhicule:</span> <strong>{{ tour.id_vehicle.immatriculation|default:"-" }}</strong></div>
+                <div><span>Expéditions:</span> <strong>{{ tour.expedition_count }}</strong></div>
+                <div><span>Départ:</span> <strong>{{ tour.starting_hour|time:"H:i"|default:"--:--" }}</strong></div>
+            </div>
+        </div>
+
+        <form method="POST">
+            {% csrf_token %}
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="id_kilometers">Kilométrage parcouru (km)</label>
+                    {{ form.kilometers }}
+                </div>
+                <div class="form-group">
+                    <label for="id_fuel_consumption">Consommation carburant (L)</label>
+                    {{ form.fuel_consumption }}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    {{ form.has_delay }}
+                    <label for="id_has_delay">Retard signalé</label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_delay_minutes">Minutes de retard</label>
+                {{ form.delay_minutes }}
+            </div>
+
+            <div class="form-group">
+                <div class="checkbox-group">
+                    {{ form.has_technical_issue }}
+                    <label for="id_has_technical_issue">Problème technique rencontré</label>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="id_technical_issue_description">Description du problème</label>
+                {{ form.technical_issue_description }}
+            </div>
+
+            <div class="form-group">
+                <label for="id_comments">Commentaires additionnels</label>
+                {{ form.comments }}
+            </div>
+
+            <div class="form-actions">
+                <a href="{% url 'tour:detail' tour.pk %}" class="btn">Annuler</a>
+                <button type="submit" class="btn primary">
+                    <i class="fa fa-check"></i> Terminer la tournée
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,346 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expédition {{ expedition.tracking_number }}</title>
+    <link rel="stylesheet" href="{% static 'incidents/css/incidents.css' %}">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+                <div><h1>TransportPro</h1><span>Gestion logistique</span></div>
+            </div>
+            <nav class="nav-menu">
+                <a href="{% url 'home' %}" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>Tableau de bord</a>
+                <a href="{% url 'expedition_list' %}" class="nav-item active"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>Gestion des expéditions</a>
+                <a href="{% url 'track_expedition' %}" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>Suivi colis</a>
+                <a href="{% url 'tour:list' %}" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>Gestion des tournées</a>
+                <a href="{% url 'drivers' %}" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>Gestion des tables</a>
+                <a href="{% url 'incident_list' %}" class="nav-item"><svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>Incidents</a>
+            </nav>
+            <div class="user-info">
+                <div class="avatar">{{ request.user.username|slice:":2"|upper }}</div>
+                <div><strong>{{ request.user.username }}</strong><span>{{ request.user.role|default:"Admin" }}</span></div>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <header class="header">
+                <span class="date">{{ "now"|date:"l d F Y" }}</span>
+                <a href="{% url 'logout' %}" class="btn-logout">Déconnexion</a>
+            </header>
+            
+            <div class="content">
+                <div class="page-header">
+                    <div>
+                        <h1>{{ expedition.tracking_number }}</h1>
+                        <p>Détails de l'expédition</p>
+                    </div>
+                    <div class="header-actions">
+                        <a href="{% url 'expedition_list' %}" class="btn btn-secondary">Retour</a>
+                        <a href="{% url 'expedition_pdf' expedition.pk %}" class="btn btn-secondary">Imprimer PDF</a>
+                        <a href="{% url 'update_expedition' expedition.pk %}" class="btn btn-primary">Modifier</a>
+                        <a href="{% url 'delete_expedition' expedition.pk %}" class="btn btn-danger">Supprimer</a>
+                    </div>
+                </div>
+                
+                <!-- Status Card with Quick Update -->
+                <div class="status-card status-{{ expedition.status|lower }}">
+                    <div class="status-main">
+                        <div class="status-icon">
+                            {% if expedition.status == 'DELIVERED' %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            {% elif expedition.status == 'FAILED' %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            {% else %}
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+                            {% endif %}
+                        </div>
+                        <div class="status-text">
+                            <span class="status-label">Statut actuel</span>
+                            <span class="status-value" id="currentStatus">{{ expedition.get_status_display }}</span>
+                        </div>
+                    </div>
+                    {% if next_statuses %}
+                    <div class="status-actions">
+                        <span class="action-label">Passer à :</span>
+                        {% for status in next_statuses %}
+                        <button class="btn-status-action" data-status="{{ status }}" data-expedition="{{ expedition.pk }}">
+                            {{ status_choices|dict_get:status }}
+                        </button>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Progress Timeline -->
+                <div class="progress-section">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill" style="width: {{ progress }}%"></div>
+                    </div>
+                    <div class="progress-steps">
+                        <div class="step {% if progress >= 0 %}active{% endif %} {% if progress > 0 %}completed{% endif %}"><div class="step-dot"></div><span>Enregistré</span></div>
+                        <div class="step {% if progress >= 25 %}active{% endif %} {% if progress > 25 %}completed{% endif %}"><div class="step-dot"></div><span>En transit</span></div>
+                        <div class="step {% if progress >= 50 %}active{% endif %} {% if progress > 50 %}completed{% endif %}"><div class="step-dot"></div><span>Centre de tri</span></div>
+                        <div class="step {% if progress >= 75 %}active{% endif %} {% if progress > 75 %}completed{% endif %}"><div class="step-dot"></div><span>En livraison</span></div>
+                        <div class="step {% if progress >= 100 %}active completed{% endif %} {% if expedition.status == 'FAILED' %}failed{% endif %}"><div class="step-dot"></div><span>{% if expedition.status == 'FAILED' %}Échec{% else %}Livré{% endif %}</span></div>
+                    </div>
+                </div>
+                
+                <div class="detail-grid">
+                    <!-- Info Cards -->
+                    <div class="info-section">
+                        <div class="form-card">
+                            <div class="form-card-header"><h3>Informations générales</h3></div>
+                            <ul class="form-list">
+                                <li class="form-list-item"><span class="item-label">N° de suivi</span><span class="item-value mono">{{ expedition.tracking_number }}</span></li>
+                                <li class="form-list-item"><span class="item-label">Date de création</span><span class="item-value">{{ expedition.created_at|date:"d/m/Y H:i" }}</span></li>
+                                <li class="form-list-item"><span class="item-label">Dernière mise à jour</span><span class="item-value">{{ expedition.updated_at|date:"d/m/Y H:i" }}</span></li>
+                                <li class="form-list-item"><span class="item-label">Livraison estimée</span><span class="item-value">{{ expedition.estimated_delivery_date|date:"d/m/Y"|default:"-" }}</span></li>
+                                {% if expedition.reel_delivery_date %}<li class="form-list-item"><span class="item-label">Livraison réelle</span><span class="item-value success">{{ expedition.reel_delivery_date|date:"d/m/Y" }}</span></li>{% endif %}
+                            </ul>
+                        </div>
+                        
+                        <div class="form-card">
+                            <div class="form-card-header"><h3>Client</h3></div>
+                            <ul class="form-list">
+                                <li class="form-list-item"><span class="item-label">Nom</span><span class="item-value">{{ expedition.id_client|default:"Non assigné" }}</span></li>
+                                {% if expedition.id_client %}<li class="form-list-item"><span class="item-label">Code client</span><span class="item-value mono">{{ expedition.id_client.code_client|default:"-" }}</span></li>{% endif %}
+                            </ul>
+                        </div>
+                        
+                        <div class="form-card">
+                            <div class="form-card-header"><h3>Destination</h3></div>
+                            <ul class="form-list">
+                                {% if expedition.id_destination %}
+                                <li class="form-list-item"><span class="item-label">Adresse</span><span class="item-value">{{ expedition.id_destination.adresse }}</span></li>
+                                <li class="form-list-item"><span class="item-label">Ville</span><span class="item-value">{{ expedition.id_destination.ville }}</span></li>
+                                <li class="form-list-item"><span class="item-label">Code postal</span><span class="item-value">{{ expedition.id_destination.code_postal }}</span></li>
+                                <li class="form-list-item"><span class="item-label">Pays</span><span class="item-value">{{ expedition.id_destination.pays }}</span></li>
+                                {% else %}<li class="form-list-item"><span class="item-label">Destination</span><span class="item-value empty">Non définie</span></li>{% endif %}
+                            </ul>
+                        </div>
+                        
+                        <div class="form-card">
+                            <div class="form-card-header"><h3>Détails du colis</h3></div>
+                            <ul class="form-list">
+                                <li class="form-list-item"><span class="item-label">Poids</span><span class="item-value">{{ expedition.weight|floatformat:2|default:"-" }} kg</span></li>
+                                <li class="form-list-item"><span class="item-label">Volume</span><span class="item-value">{{ expedition.volume|floatformat:2|default:"-" }} m³</span></li>
+                                <li class="form-list-item"><span class="item-label">Type de service</span><span class="item-value">{{ expedition.id_service_type|default:"-" }}</span></li>
+                                {% if expedition.description %}<li class="form-list-item desc-row"><span class="item-label">Description</span><span class="item-value">{{ expedition.description }}</span></li>{% endif %}
+                            </ul>
+                        </div>
+                        
+                        <div class="form-card highlight">
+                            <div class="form-card-header"><h3>Tarification</h3></div>
+                            <ul class="form-list">
+                                <li class="form-list-item"><span class="item-label">Prix total</span><span class="item-value price">{{ expedition.total_price|floatformat:2 }} DA</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <!-- Timeline Section -->
+                    <div class="timeline-section">
+                        <div class="form-card timeline-card">
+                            <div class="form-card-header"><h3>Historique des statuts</h3></div>
+                            <div class="timeline" id="statusTimeline">
+                                {% for entry in status_history %}
+                                <div class="timeline-item {% if forloop.last %}current{% endif %}">
+                                    <div class="timeline-dot"></div>
+                                    <div class="timeline-content">
+                                        <div class="timeline-header">
+                                            <span class="timeline-status">{{ entry.get_status_display }}</span>
+                                            <span class="timeline-date">{{ entry.changed_at|date:"d/m/Y H:i" }}</span>
+                                        </div>
+                                        {% if entry.location %}<div class="timeline-location"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:12px;height:12px;"><path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg> {{ entry.location }}</div>{% endif %}
+                                        {% if entry.notes %}<div class="timeline-notes">{{ entry.notes }}</div>{% endif %}
+                                        {% if entry.changed_by %}<div class="timeline-user">Par: {{ entry.changed_by }}</div>{% endif %}
+                                    </div>
+                                </div>
+                                {% empty %}
+                                <div class="timeline-empty">Aucun historique disponible</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        
+                        {% if expedition.id_tour %}
+                        <div class="form-card">
+                            <div class="form-card-header"><h3>Tournée assignée</h3></div>
+                            <ul class="form-list">
+                                <li class="form-list-item"><span class="item-label">ID Tournée</span><span class="item-value"><a href="{% url 'tour:detail' expedition.id_tour.id_tour %}">{{ expedition.id_tour.id_tour }}</a></span></li>
+                                <li class="form-list-item"><span class="item-label">Date</span><span class="item-value">{{ expedition.id_tour.tour_date|date:"d/m/Y"|default:"-" }}</span></li>
+                                <li class="form-list-item"><span class="item-label">Chauffeur</span><span class="item-value">{{ expedition.id_tour.id_driver|default:"-" }}</span></li>
+                                <li class="form-list-item"><span class="item-label">Véhicule</span><span class="item-value">{{ expedition.id_tour.id_vehicle|default:"-" }}</span></li>
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <!-- Status Update Modal -->
+    <div class="modal" id="statusModal">
+        <div class="modal-content">
+            <div class="modal-header"><h3>Confirmer le changement de statut</h3><button class="modal-close">&times;</button></div>
+            <div class="modal-body">
+                <p>Passer l'expédition à : <strong id="newStatusLabel"></strong></p>
+                <div class="form-group"><label>Localisation (optionnel)</label><input type="text" id="statusLocation" class="filter-input" placeholder="Ex: Centre de tri Paris"></div>
+                <div class="form-group"><label>Notes (optionnel)</label><textarea id="statusNotes" class="filter-input" rows="2" placeholder="Commentaires..."></textarea></div>
+            </div>
+            <div class="modal-footer"><button class="btn btn-secondary modal-close-btn">Annuler</button><button class="btn btn-primary" id="confirmStatusUpdate">Confirmer</button></div>
+        </div>
+    </div>
+    
+    <style>
+        .header-actions { display: flex; gap: 10px; }
+        .btn { padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 500; transition: all 0.2s; border: none; cursor: pointer; font-size: 14px; }
+        .btn-primary { background: #2563eb; color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-secondary { background: #f1f5f9; color: #64748b; }
+        .btn-secondary:hover { background: #e2e8f0; }
+        .btn-danger { background: #fee2e2; color: #dc2626; }
+        .btn-danger:hover { background: #fecaca; }
+        
+        .status-card { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-radius: 12px; margin-bottom: 20px; color: white; }
+        .status-card.status-registered { background: linear-gradient(135deg, #6b7280, #4b5563); }
+        .status-card.status-transit { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+        .status-card.status-sorting { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .status-card.status-out_for_delivery { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .status-card.status-delivered { background: linear-gradient(135deg, #10b981, #059669); }
+        .status-card.status-failed { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .status-main { display: flex; align-items: center; gap: 16px; }
+        .status-icon svg { width: 40px; height: 40px; }
+        .status-label { font-size: 13px; opacity: 0.9; display: block; }
+        .status-value { font-size: 24px; font-weight: 700; }
+        .status-actions { display: flex; align-items: center; gap: 10px; }
+        .action-label { font-size: 13px; opacity: 0.9; }
+        .btn-status-action { background: rgba(255,255,255,0.2); border: 2px solid white; color: white; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; transition: all 0.2s; }
+        .btn-status-action:hover { background: white; color: #374151; }
+        
+        .progress-section { background: white; padding: 24px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #e5e7eb; }
+        .progress-bar { height: 6px; background: #e5e7eb; border-radius: 3px; margin-bottom: 16px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #10b981, #059669); border-radius: 3px; transition: width 0.5s ease; }
+        .progress-steps { display: flex; justify-content: space-between; }
+        .step { display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; }
+        .step-dot { width: 16px; height: 16px; border-radius: 50%; background: #e5e7eb; border: 3px solid white; box-shadow: 0 0 0 2px #e5e7eb; transition: all 0.3s; }
+        .step.active .step-dot { background: #10b981; box-shadow: 0 0 0 2px #10b981; }
+        .step.completed .step-dot { background: #10b981; }
+        .step.failed .step-dot { background: #ef4444; box-shadow: 0 0 0 2px #ef4444; }
+        .step span { font-size: 12px; color: #9ca3af; text-align: center; }
+        .step.active span { color: #374151; font-weight: 500; }
+        
+        .detail-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .info-section, .timeline-section { display: flex; flex-direction: column; gap: 16px; }
+        
+        .form-card { background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden; }
+        .form-card.highlight { border: 2px solid #2563eb; }
+        .form-card.timeline-card { flex: 1; }
+        .form-card-header { background: #f8fafc; padding: 12px 20px; border-bottom: 1px solid #e5e7eb; }
+        .form-card-header h3 { margin: 0; font-size: 14px; font-weight: 600; color: #374151; }
+        .form-list { list-style: none; margin: 0; padding: 0; }
+        .form-list-item { display: flex; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid #f3f4f6; }
+        .form-list-item:last-child { border-bottom: none; }
+        .form-list-item.desc-row { flex-direction: column; gap: 4px; }
+        .item-label { font-size: 13px; color: #6b7280; }
+        .item-value { font-size: 14px; color: #111827; }
+        .item-value.mono { font-family: monospace; color: #6b7280; }
+        .item-value.empty { color: #d1d5db; font-style: italic; }
+        .item-value.price { font-size: 18px; font-weight: 600; color: #059669; }
+        .item-value.success { color: #059669; font-weight: 500; }
+        .item-value a { color: #2563eb; text-decoration: none; }
+        .item-value a:hover { text-decoration: underline; }
+        
+        .timeline { position: relative; padding: 20px; }
+        .timeline::before { content: ''; position: absolute; left: 27px; top: 20px; bottom: 20px; width: 2px; background: #e5e7eb; }
+        .timeline-item { position: relative; padding-left: 32px; padding-bottom: 20px; }
+        .timeline-item:last-child { padding-bottom: 0; }
+        .timeline-dot { position: absolute; left: 0; top: 0; width: 16px; height: 16px; border-radius: 50%; background: #e5e7eb; border: 3px solid white; box-shadow: 0 0 0 2px #e5e7eb; }
+        .timeline-item.current .timeline-dot { background: #2563eb; box-shadow: 0 0 0 2px #2563eb; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 2px #2563eb; } 50% { box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.3); } }
+        .timeline-content { padding-left: 12px; }
+        .timeline-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .timeline-status { font-weight: 600; color: #374151; font-size: 14px; }
+        .timeline-date { font-size: 12px; color: #9ca3af; }
+        .timeline-location { font-size: 13px; color: #6b7280; display: flex; align-items: center; gap: 4px; }
+        .timeline-notes { font-size: 13px; color: #9ca3af; margin-top: 4px; }
+        .timeline-user { font-size: 12px; color: #9ca3af; margin-top: 4px; }
+        .timeline-empty { color: #9ca3af; font-size: 14px; text-align: center; padding: 20px; }
+        
+        .modal { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center; }
+        .modal.active { display: flex; }
+        .modal-content { background: white; border-radius: 12px; width: 100%; max-width: 420px; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid #e5e7eb; }
+        .modal-header h3 { margin: 0; font-size: 16px; }
+        .modal-close { background: none; border: none; font-size: 24px; cursor: pointer; color: #9ca3af; }
+        .modal-body { padding: 20px; }
+        .modal-body p { margin: 0 0 16px; }
+        .modal-body .form-group { margin-bottom: 16px; }
+        .modal-body .form-group:last-child { margin-bottom: 0; }
+        .modal-body label { display: block; font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px; }
+        .filter-input { width: 100%; padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 6px; font-size: 14px; }
+        .filter-input:focus { outline: none; border-color: #2563eb; }
+        .modal-footer { display: flex; justify-content: flex-end; gap: 10px; padding: 16px 20px; border-top: 1px solid #e5e7eb; background: #f9fafb; }
+        
+        @media (max-width: 1024px) { .detail-grid { grid-template-columns: 1fr; } }
+        @media (max-width: 768px) { .status-card { flex-direction: column; gap: 16px; text-align: center; } .progress-steps { flex-wrap: wrap; gap: 8px; } .step { flex: none; width: calc(20% - 8px); } }
+    </style>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('statusModal');
+            const statusButtons = document.querySelectorAll('.btn-status-action');
+            const closeButtons = document.querySelectorAll('.modal-close, .modal-close-btn');
+            const confirmBtn = document.getElementById('confirmStatusUpdate');
+            const newStatusLabel = document.getElementById('newStatusLabel');
+            let pendingStatus = null;
+            
+            const statusLabels = {
+                'REGISTERED': 'Enregistré',
+                'TRANSIT': 'En transit',
+                'SORTING': 'Centre de tri',
+                'OUT_FOR_DELIVERY': 'En cours de livraison',
+                'DELIVERED': 'Livré',
+                'FAILED': 'Échec de livraison'
+            };
+            
+            statusButtons.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    pendingStatus = this.dataset.status;
+                    newStatusLabel.textContent = statusLabels[pendingStatus] || pendingStatus;
+                    modal.classList.add('active');
+                });
+            });
+            
+            closeButtons.forEach(btn => btn.addEventListener('click', () => modal.classList.remove('active')));
+            modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('active'); });
+            
+            confirmBtn.addEventListener('click', async function() {
+                const location = document.getElementById('statusLocation').value;
+                const notes = document.getElementById('statusNotes').value;
+                
+                try {
+                    const response = await fetch(`/logistics/expeditions/{{ expedition.pk }}/status/`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                        body: JSON.stringify({ status: pendingStatus, location, notes })
+                    });
+                    const data = await response.json();
+                    if (data.success) {
+                        window.location.reload();
+                    } else {
+                        alert(data.error || 'Erreur lors de la mise à jour');
+                    }
+                } catch (e) {
+                    alert('Erreur de connexion');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

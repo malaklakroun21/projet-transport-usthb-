@@ -8,6 +8,11 @@ urlpatterns = [
     path('expeditions/<int:pk>/', views.expedition_detail, name='expedition_detail'),
     path('expeditions/<int:pk>/update/', views.update_expedition, name='update_expedition'),
     path('expeditions/<int:pk>/delete/', views.delete_expedition, name='delete_expedition'),
+    path('expeditions/<int:pk>/status/', views.update_expedition_status, name='update_expedition_status'),
+    path('expeditions/<int:pk>/pdf/', views.expedition_pdf, name='expedition_pdf'),
+    path('expeditions/export/', views.export_expeditions_csv, name='export_expeditions_csv'),
+    path('tracking/', views.track_expedition, name='track_expedition'),
+    path('api/calculate-price/', views.calculate_price_api, name='calculate_price_api'),
 
     # ================ DRIVERS ================
     path('', views.drivers, name='drivers'),

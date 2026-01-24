@@ -11,10 +11,13 @@
       <i class="fa fa-bars"></i>
     </li>
     <li>
-      <a href="{% url 'home' %}"><i class="fa fa-tachometer-alt"></i><span>Dashboard</span></a>
+      <a href="{% url 'home' %}"><i class="fa fa-tachometer-alt"></i><span>Tableau de bord</span></a>
     </li>
     <li>
-      <a href="{% url 'expedition:wizard' %}"><i class="fa fa-box"></i><span>Nouvelle expédition</span></a>
+      <a href="{% url 'expedition_list' %}"><i class="fa fa-box"></i><span>Gestion des expéditions</span></a>
+    </li>
+    <li>
+      <a href="{% url 'tour:list' %}"><i class="fa fa-route"></i><span>Gestion des tournées</span></a>
     </li>
     <li>
       <a href="{% url 'clients' %}"

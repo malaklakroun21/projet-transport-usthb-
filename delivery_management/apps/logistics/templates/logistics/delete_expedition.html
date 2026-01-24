@@ -1,0 +1,103 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supprimer - {{ expedition.tracking_number }}</title>
+    <link rel="stylesheet" href="{% static 'incidents/css/incidents.css' %}">
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/>
+                </svg>
+                <div><h1>TransportPro</h1><span>Gestion logistique</span></div>
+            </div>
+            <nav class="nav-menu">
+                <a href="{% url 'home' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    Tableau de bord
+                </a>
+                <a href="{% url 'expedition_list' %}" class="nav-item active">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    Gestion des expéditions
+                </a>
+                <a href="{% url 'tour:list' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                    Gestion des tournées
+                </a>
+                <a href="{% url 'drivers' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                    Gestion des tables
+                </a>
+                <a href="{% url 'incident_list' %}" class="nav-item">
+                    <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    Incidents
+                </a>
+            </nav>
+            <div class="user-info">
+                <div class="avatar">{{ request.user.username|slice:":2"|upper }}</div>
+                <div><strong>{{ request.user.username }}</strong><span>{{ request.user.role|default:"Admin" }}</span></div>
+            </div>
+        </aside>
+        
+        <main class="main-content">
+            <header class="header">
+                <span class="date">{{ "now"|date:"l d F Y" }}</span>
+                <a href="{% url 'logout' %}" class="btn-logout">Déconnexion</a>
+            </header>
+            
+            <div class="content">
+                <div class="delete-container">
+                    <div class="delete-card">
+                        <div class="delete-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                            </svg>
+                        </div>
+                        <h2>Confirmer la suppression</h2>
+                        <p>Êtes-vous sûr de vouloir supprimer l'expédition <strong>{{ expedition.tracking_number }}</strong> ?</p>
+                        <ul class="info-list">
+                            <li><span>Client:</span> <span>{{ expedition.id_client|default:"-" }}</span></li>
+                            <li><span>Destination:</span> <span>{{ expedition.id_destination|default:"-" }}</span></li>
+                            <li><span>Status:</span> <span>{{ expedition.get_status_display }}</span></li>
+                        </ul>
+                        <div class="warning-box">Cette action est irréversible.</div>
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="actions">
+                                <a href="{% url 'expedition_list' %}" class="btn btn-secondary">Annuler</a>
+                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <style>
+        .delete-container { display: flex; justify-content: center; align-items: center; min-height: 50vh; }
+        .delete-card { background: white; border-radius: 12px; padding: 32px; max-width: 420px; width: 100%; text-align: center; border: 1px solid #e5e7eb; }
+        .delete-icon { width: 64px; height: 64px; margin: 0 auto 20px; background: #fee2e2; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+        .delete-icon svg { width: 32px; height: 32px; color: #dc2626; }
+        .delete-card h2 { margin: 0 0 12px 0; font-size: 20px; color: #111827; }
+        .delete-card p { color: #6b7280; margin-bottom: 20px; }
+        .delete-card p strong { color: #111827; }
+        .info-list { list-style: none; padding: 0; margin: 0 0 20px 0; background: #f9fafb; border-radius: 8px; padding: 12px 16px; text-align: left; }
+        .info-list li { display: flex; justify-content: space-between; padding: 6px 0; font-size: 14px; }
+        .info-list li span:first-child { color: #6b7280; }
+        .info-list li span:last-child { color: #111827; font-weight: 500; }
+        .warning-box { background: #fef3c7; border: 1px solid #fbbf24; border-radius: 6px; padding: 10px; color: #92400e; font-size: 13px; margin-bottom: 20px; }
+        .actions { display: flex; gap: 12px; justify-content: center; }
+        .btn { padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 500; transition: all 0.2s; border: none; cursor: pointer; font-size: 14px; }
+        .btn-secondary { background: #f1f5f9; color: #64748b; }
+        .btn-secondary:hover { background: #e2e8f0; }
+        .btn-danger { background: #dc2626; color: white; }
+        .btn-danger:hover { background: #b91c1c; }
+    </style>
+</body>
+</html>

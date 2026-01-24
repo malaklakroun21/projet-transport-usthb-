@@ -358,15 +358,6 @@
                             Étape {{ current_step }}: {{ step_titles|get_item:current_step }}
                         </h5>
 
-                        <!-- Messages -->
-                        {% if messages %}
-                        {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }}">
-                            {{ message }}
-                        </div>
-                        {% endfor %}
-                        {% endif %}
-
                         <!-- Formulaire -->
                         <form method="post" id="wizard-form">
                             {% csrf_token %}
