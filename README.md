@@ -157,7 +157,7 @@ python manage.py runserver
 
 - **Administrateur** : Gestion complète du système, accès à toutes les fonctionnalités
 - **Agent** : Gestion opérationnelle (expéditions, tournées, incidents, etc.)
-- **Chauffeur** : Accès restreint à ses propres tournées et livraisons
+
 
 ---
 
